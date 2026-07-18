@@ -7,9 +7,9 @@ managers and analysts. It is designed to turn customer feedback into recurring
 pain points, measurable priorities, grounded recommendations, and experiment
 ideas while keeping product teams in control.
 
-> Phase 1 status: the project foundation, navigation shell, configuration,
-> documentation, and synthetic demonstration dataset are available. Data
-> processing and analytics are intentionally reserved for later phases.
+> Phase 2 status: CSV upload, sample-data loading, flexible column mapping,
+> validation, deterministic cleaning, preview, and cleaned CSV download are
+> available. Analytics and machine learning remain reserved for later phases.
 
 ## Problem statement
 
@@ -22,24 +22,26 @@ metrics.
 ## Product workflow
 
 1. Upload or load customer feedback.
-2. Map and validate columns.
-3. Clean and classify the feedback.
-4. Explore themes, sentiment, trends, and segments.
+2. Map source columns to the canonical schema.
+3. Validate and clean the feedback locally.
+4. Explore themes, sentiment, trends, and segments in later phases.
 5. Review source-backed recommendations and experiment ideas.
 6. Ask questions and export reviewed findings.
 
 ## Planned features
 
-- Flexible CSV ingestion and validation
-- Local sentiment and theme classification
+- CSV ingestion with UTF-8, UTF-8-SIG, and Latin-1 handling
+- Automatic mapping suggestions with editable, unique column mappings
+- Structured validation and deterministic cleaning
+- Local sentiment and theme classification (planned)
 - Pain-point and feature-request prioritization
 - Source-linked representative quotes
 - Product analytics dashboards and filters
 - Optional Gemini-supported recommendations with deterministic fallback
 - Experiment proposals, evaluation, and exports
 
-Phase 1 provides the application shell for all seven product areas without
-showing fabricated metrics.
+Phase 2 provides data preparation across the application shell without showing
+fabricated metrics or adding analytics early.
 
 ## Screenshots
 
@@ -47,11 +49,12 @@ Screenshots will be added after the dashboard phase is implemented.
 
 ## Architecture
 
-`app.py` is a small Streamlit entry point. Reusable configuration, session, and
-presentation helpers live in `src/`. Streamlit discovers the seven files in
-`pages/` and displays them in the sidebar. Later phases will add isolated data,
-analytics, AI, and persistence modules without moving business logic into page
-files. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+`app.py` is a small Streamlit entry point. Reusable configuration, session,
+loading, validation, cleaning, and presentation helpers live in `src/`.
+Streamlit discovers the seven files in `pages/` and displays them in the
+sidebar. Later phases will add isolated analytics, AI, and persistence modules
+without moving business logic into page files. See
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Tech stack
 
@@ -102,6 +105,13 @@ source .venv/bin/activate
 streamlit run app.py
 ```
 
+To verify the project:
+
+```bash
+python -m compileall app.py src pages tests
+pytest -q
+```
+
 ## Dataset format
 
 The preferred CSV columns are:
@@ -121,6 +131,38 @@ The preferred CSV columns are:
 `data/sample_reviews.csv` contains fictional food-delivery reviews for local
 demonstration. It includes deliberate duplicates and missing optional values so
 later validation behavior can be exercised.
+
+## Load and prepare feedback
+
+1. Open the application and use the sidebar.
+2. Upload a `.csv` file or select **Load sample data**.
+3. Review the detected columns and automatic mapping suggestions.
+4. Map the mandatory feedback-text field and any available optional fields.
+5. Select **Validate data** and review errors or warnings.
+6. Select **Clean and process** when validation allows it.
+7. Open **Overview** to inspect and download the cleaned CSV.
+
+Mappings support arbitrary source names. Common aliases include `content` for
+`review_text`, `score` for `rating`, `at` for `date`, and `source` for
+`platform`. One source column cannot be mapped to multiple canonical fields.
+
+## Validation behavior
+
+Blocking errors include an empty dataset, missing feedback mapping, no usable
+feedback, duplicate source mappings, and exceeding `MAX_UPLOAD_ROWS`. Warnings
+cover exact duplicates, duplicate feedback text, blank feedback, invalid
+optional dates or ratings, missing optional fields, mixed value types, and
+datasets with limited rows, dates, or ratings. Warnings remain visible but do
+not automatically block cleaning.
+
+## Cleaning behavior
+
+Cleaning removes exact duplicate rows and blank feedback, preserves the source
+feedback in `original_text`, and creates normalized `clean_text`. It strips HTML
+and URLs, normalizes Unicode and whitespace, parses dates, constrains ratings to
+1–5, generates missing review IDs, and creates absent optional columns. It does
+not remove stop words, stem, lemmatize, calculate sentiment, classify themes, or
+send data to an API.
 
 ## Sample questions
 
@@ -156,9 +198,20 @@ one review, and insufficient trend data. See
 
 ## Future improvements
 
-Following phases add the data pipeline, core analytics, dashboards, optional AI
-support, evaluation, exports, and final polish. Potential post-MVP work includes
-multilingual models, scheduled ingestion, integrations, and user authentication.
+The next phase adds local sentiment, taxonomy classification, feature-request
+detection, product metrics, severity, and priority logic. Dashboards, optional
+AI support, evaluation, and broader exports follow in their own phases.
+Potential post-MVP work includes multilingual models, scheduled ingestion,
+integrations, and user authentication.
+
+## Current limitations
+
+- Only CSV input is supported.
+- `review_text` must be mapped before validation.
+- Dates and ratings that cannot be safely parsed are cleared, not inferred.
+- Duplicate removal is exact-row based; near-duplicate detection is not present.
+- No sentiment, theme, feature-request, trend, score, database, or AI processing
+  is implemented yet.
 
 ## Resume bullet
 
