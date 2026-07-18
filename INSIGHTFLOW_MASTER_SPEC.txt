@@ -1,0 +1,1830 @@
+MASTER BUILD PROMPT — INSIGHTFLOW AI
+
+You are a senior full-stack engineer, data scientist, product analyst, AI engineer, and UX designer.
+
+Your task is to build a complete, polished, deployment-ready project called:
+
+INSIGHTFLOW AI
+Voice of Customer and Product Analytics Copilot
+
+The application must help product managers and product analysts convert raw customer feedback into measurable product insights, prioritized problems, evidence-backed recommendations, and A/B testing ideas.
+
+The project must run smoothly on a MacBook with Apple Silicon M4.
+
+Build this project as a practical one-day MVP. Prioritize reliability, clarity, product relevance, and a polished working demo over unnecessary technical complexity.
+
+Do not build a basic sentiment-analysis dashboard. Build a product decision-support system.
+
+==================================================
+1. CORE PRODUCT PROBLEM
+==================================================
+
+Product teams receive customer feedback from multiple sources such as:
+
+- Google Play reviews
+- App Store reviews
+- Support tickets
+- Customer interviews
+- Sales notes
+- Surveys
+- Social media comments
+- Email feedback
+
+Product managers manually read this feedback, categorize complaints, count recurring issues, identify trends, find representative quotes, and decide what should be prioritized.
+
+This workflow is:
+
+- slow
+- repetitive
+- subjective
+- difficult to scale
+- vulnerable to human bias
+- disconnected from measurable product decisions
+
+InsightFlow AI must automate this workflow.
+
+==================================================
+2. PRODUCT GOAL
+==================================================
+
+The application should allow a user to upload a customer-feedback CSV and automatically:
+
+1. Validate the dataset.
+2. Clean the feedback.
+3. Detect sentiment.
+4. Categorize each feedback item into a product theme.
+5. Identify pain points and feature requests.
+6. Calculate theme frequency.
+7. Calculate severity.
+8. Calculate priority.
+9. Identify trends over time.
+10. Show representative customer quotes.
+11. Generate evidence-backed product recommendations.
+12. Generate A/B experiment proposals.
+13. Allow the user to explore the data using filters.
+14. Allow the user to ask product-analysis questions.
+15. Export the final analysis.
+
+==================================================
+3. TARGET USERS
+==================================================
+
+Primary users:
+- Product Managers
+- Product Analysts
+
+Secondary users:
+- Startup founders
+- Customer success teams
+- UX researchers
+- Growth teams
+- Business analysts
+
+==================================================
+4. MANDATORY TECHNOLOGY STACK
+==================================================
+
+Use the following stack unless there is a strong technical reason not to:
+
+- Python 3.11
+- Streamlit
+- Pandas
+- NumPy
+- Plotly
+- DuckDB
+- scikit-learn
+- python-dotenv
+- Gemini API using the latest stable official Python SDK
+- Pydantic for structured AI responses if useful
+
+Avoid:
+
+- React
+- Node.js
+- Docker
+- Kubernetes
+- complex cloud infrastructure
+- unnecessary agent frameworks
+- LangChain unless absolutely required
+- paid databases
+- heavyweight models running locally
+
+The application must work locally on macOS Apple Silicon.
+
+==================================================
+5. MACBOOK M4 COMPATIBILITY
+==================================================
+
+The project must:
+
+- use Python 3.11
+- work inside a virtual environment
+- avoid Intel-only dependencies
+- avoid packages requiring CUDA
+- avoid GPU-specific code
+- avoid packages that are difficult to install on Apple Silicon
+- use CPU-friendly ML techniques
+- load quickly
+- handle at least 10,000 feedback records without freezing
+- cache expensive computations using Streamlit caching
+- degrade gracefully if the Gemini API key is unavailable
+
+Provide exact terminal commands for setup on macOS.
+
+==================================================
+6. APPLICATION NAME AND BRANDING
+==================================================
+
+Application name:
+InsightFlow AI
+
+Subtitle:
+Turn customer feedback into product decisions
+
+Supporting copy:
+Upload customer feedback, discover recurring pain points, quantify their impact, and generate evidence-backed product recommendations.
+
+Use a modern, minimal, professional dashboard design.
+
+The visual style should feel appropriate for a product analytics SaaS application.
+
+Do not use excessive animations.
+
+==================================================
+7. REQUIRED PROJECT STRUCTURE
+==================================================
+
+Create the following folder structure:
+
+insightflow-ai/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+├── .env.example
+├── .gitignore
+│
+├── data/
+│   ├── sample_reviews.csv
+│   └── processed/
+│
+├── assets/
+│   └── logo_placeholder.txt
+│
+├── pages/
+│   ├── 1_Overview.py
+│   ├── 2_Pain_Points.py
+│   ├── 3_Feature_Requests.py
+│   ├── 4_AI_Recommendations.py
+│   ├── 5_Experiment_Center.py
+│   ├── 6_Ask_Your_Data.py
+│   └── 7_Evaluation.py
+│
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── data_validator.py
+│   ├── data_cleaner.py
+│   ├── sentiment.py
+│   ├── taxonomy.py
+│   ├── classifier.py
+│   ├── feature_requests.py
+│   ├── metrics.py
+│   ├── prioritization.py
+│   ├── trends.py
+│   ├── quotes.py
+│   ├── database.py
+│   ├── ai_client.py
+│   ├── prompts.py
+│   ├── recommendations.py
+│   ├── experiments.py
+│   ├── evaluation.py
+│   ├── exports.py
+│   └── ui.py
+│
+├── tests/
+│   ├── test_data_validator.py
+│   ├── test_metrics.py
+│   ├── test_prioritization.py
+│   └── test_classifier.py
+│
+└── docs/
+    ├── PRD.md
+    ├── ARCHITECTURE.md
+    ├── DATA_DICTIONARY.md
+    ├── EVALUATION_FRAMEWORK.md
+    ├── FAILURE_MODES.md
+    └── DEMO_SCRIPT.md
+
+Do not put all logic inside app.py.
+
+Keep the code modular and readable.
+
+==================================================
+8. INPUT DATASET REQUIREMENTS
+==================================================
+
+The application must accept a CSV file.
+
+Preferred columns:
+
+review_id
+date
+rating
+review_text
+platform
+app_version
+country
+device
+user_segment
+
+Only review_text should be mandatory.
+
+The application must support flexible column mapping.
+
+For example, a user may upload a file containing:
+
+content
+score
+at
+source
+
+The interface should let the user map these columns to the expected fields.
+
+Required mapping:
+- Feedback text
+
+Optional mappings:
+- Review ID
+- Date
+- Rating
+- Platform
+- App version
+- Country
+- Device
+- User segment
+
+==================================================
+9. CSV VALIDATION REQUIREMENTS
+==================================================
+
+Validate the uploaded file before processing.
+
+Check:
+
+- file is a CSV
+- file is not empty
+- feedback text column exists
+- feedback text has valid non-null values
+- date format is parsable
+- ratings are numeric where available
+- ratings are within a reasonable range
+- duplicate rows
+- missing values
+- malformed encoding
+- unusually large file
+- columns with mixed data types
+
+Show a validation summary.
+
+Example:
+
+File status: Valid
+Rows detected: 4,826
+Duplicate rows: 123
+Missing feedback rows: 18
+Invalid dates: 9
+Rating range: 1–5
+
+Allow the user to proceed after cleaning.
+
+==================================================
+10. DATA CLEANING REQUIREMENTS
+==================================================
+
+Create a reusable cleaning pipeline.
+
+Perform:
+
+- remove exact duplicate reviews
+- remove rows with missing feedback
+- normalize whitespace
+- strip HTML tags
+- remove URLs where appropriate
+- preserve meaningful punctuation
+- normalize repeated spaces
+- standardize dates
+- standardize rating values
+- create missing review IDs
+- truncate abnormally long text for AI calls
+- preserve original text separately
+
+Create the following fields:
+
+review_id
+original_text
+clean_text
+date
+rating
+platform
+app_version
+country
+device
+user_segment
+
+Do not aggressively remove words because sentiment and customer meaning must be preserved.
+
+==================================================
+11. SAMPLE DATASET
+==================================================
+
+Generate data/sample_reviews.csv containing at least 300 realistic synthetic reviews for a fictional food-delivery application.
+
+The dataset must include complaints and praise related to:
+
+- late delivery
+- wrong orders
+- payment failures
+- refund delays
+- coupon problems
+- app crashes
+- login and OTP issues
+- inaccurate delivery estimates
+- restaurant search
+- order tracking
+- customer support
+- food quality
+- missing items
+- high delivery fees
+- subscription benefits
+- dark mode requests
+- scheduled delivery requests
+- reorder requests
+- filters and sorting
+- personalization
+
+Include:
+
+- dates covering at least 90 days
+- ratings from 1 to 5
+- Android and iOS
+- multiple app versions
+- multiple Indian cities or regions
+- different device types
+- a mix of positive, neutral, and negative reviews
+- several duplicate reviews
+- several missing values
+- some short ambiguous reviews
+- some reviews containing multiple issues
+
+The sample data must be usable immediately for demonstration.
+
+==================================================
+12. PRODUCT TAXONOMY
+==================================================
+
+Create a predefined product-feedback taxonomy.
+
+Use the following top-level themes:
+
+- Delivery Experience
+- Payment and Checkout
+- Refunds and Cancellations
+- Coupons and Pricing
+- App Performance
+- Login and Account
+- Search and Discovery
+- Order Tracking
+- Restaurant Experience
+- Customer Support
+- Food Quality
+- Missing or Incorrect Items
+- Fees and Charges
+- Subscription or Loyalty
+- Feature Request
+- Positive Feedback
+- Other
+
+Create useful subthemes.
+
+Example:
+
+Delivery Experience
+- Late delivery
+- Delivery partner behavior
+- Incorrect ETA
+- Unable to contact delivery partner
+
+Payment and Checkout
+- Payment failed
+- UPI issue
+- Card issue
+- Duplicate charge
+- Checkout friction
+
+App Performance
+- Crash
+- Slow loading
+- UI bug
+- Update issue
+
+Store the taxonomy in a maintainable Python structure.
+
+==================================================
+13. THEME CLASSIFICATION
+==================================================
+
+Each review must receive:
+
+- primary theme
+- optional secondary theme
+- subtheme
+- classification confidence
+- classification method
+
+Use a hybrid approach that works without an API.
+
+Recommended hierarchy:
+
+First layer: rule-based keyword detection
+Use carefully designed keywords and phrases.
+
+Second layer: lightweight ML or semantic similarity
+Use TF-IDF and cosine similarity or another CPU-friendly method.
+
+Optional AI refinement
+Use Gemini only for:
+
+- ambiguous reviews
+- summaries
+- higher-level recommendations
+- structured insights
+
+Do not send every review individually to Gemini because that would be slow and expensive.
+
+The application must work even when no API key is provided.
+
+==================================================
+14. SENTIMENT ANALYSIS
+==================================================
+
+For every feedback item, calculate:
+
+- sentiment label
+- sentiment score
+- negativity score
+
+Labels:
+
+- Positive
+- Neutral
+- Negative
+
+Use a lightweight local method for the MVP.
+
+Possible options:
+
+- VADER
+- TextBlob
+- custom rating-assisted sentiment
+- hybrid text and rating logic
+
+Preferred behavior:
+
+- use review rating to improve sentiment accuracy when rating exists
+- do not classify a 1-star complaint as positive because of misleading wording
+- handle short reviews such as “bad,” “great,” or “not working”
+
+Create a transparent function whose logic can be explained in an interview.
+
+==================================================
+15. FEATURE REQUEST DETECTION
+==================================================
+
+Detect reviews that request new capabilities.
+
+Identify phrases such as:
+
+- please add
+- need an option
+- should have
+- would be useful
+- allow us to
+- wish there was
+- feature request
+- add support for
+
+Extract a concise feature-request summary.
+
+Example:
+
+Input:
+Please add scheduled ordering because I order lunch every day.
+
+Output:
+Feature request: Scheduled ordering
+
+Group similar feature requests together.
+
+==================================================
+16. PRODUCT METRICS
+==================================================
+
+Calculate the following metrics:
+
+Overall metrics:
+
+- total feedback items
+- total unique feedback items
+- average rating
+- positive feedback percentage
+- neutral feedback percentage
+- negative feedback percentage
+- number of detected themes
+- number of feature requests
+- most frequent pain point
+- fastest-growing pain point
+
+Theme metrics:
+
+For each theme:
+
+- frequency
+- percentage of total feedback
+- average rating
+- negative percentage
+- sentiment score
+- severity score
+- trend growth
+- priority score
+- confidence
+- representative quotes
+
+Time-based metrics:
+
+- daily feedback volume
+- weekly feedback volume
+- sentiment trend
+- theme trend
+- rating trend
+- new issue detection
+- issue velocity
+
+Segmentation metrics:
+
+Where data exists:
+
+- theme by platform
+- theme by device
+- sentiment by app version
+- complaints by country
+- complaints by user segment
+- rating by platform
+
+==================================================
+17. SEVERITY SCORE
+==================================================
+
+Create an explainable severity score between 0 and 100.
+
+Recommended inputs:
+
+- negative sentiment ratio
+- average rating
+- frequency
+- issue growth rate
+- keyword severity
+- recency
+
+Example formula:
+
+severity_score =
+    0.30 × negative_sentiment_component
+  + 0.25 × rating_component
+  + 0.20 × frequency_component
+  + 0.15 × trend_component
+  + 0.10 × critical_keyword_component
+
+Normalize all components to 0–100.
+
+Critical keywords may include:
+
+- money deducted
+- charged twice
+- unable to order
+- account blocked
+- refund not received
+- scam
+- unsafe
+- fraud
+- food poisoning
+- crash
+- login impossible
+
+Display the score explanation in the UI.
+
+Do not present severity as an objective truth. Label it as a prioritization aid.
+
+==================================================
+18. PRIORITY SCORE
+==================================================
+
+Create a priority score between 0 and 100.
+
+Use:
+
+priority_score =
+    0.30 × frequency_score
+  + 0.30 × severity_score
+  + 0.20 × trend_score
+  + 0.10 × business_risk_score
+  + 0.10 × confidence_score
+
+Assign priority labels:
+
+- P0 Critical
+- P1 High
+- P2 Medium
+- P3 Low
+
+Suggested thresholds:
+
+- 80–100: P0
+- 60–79: P1
+- 40–59: P2
+- 0–39: P3
+
+Explain why each theme received its priority.
+
+==================================================
+19. BUSINESS RISK CLASSIFICATION
+==================================================
+
+Assign a business-risk category to each theme.
+
+Risk types:
+
+- Revenue risk
+- Retention risk
+- Trust risk
+- Operational risk
+- Conversion risk
+- Customer satisfaction risk
+- Low direct business risk
+
+Examples:
+
+- payment failure → conversion and revenue risk
+- refund delay → trust and retention risk
+- app crash → conversion and retention risk
+- late delivery → satisfaction and retention risk
+- dark mode request → low direct business risk
+
+Use transparent mapping rules.
+
+==================================================
+20. REPRESENTATIVE QUOTES
+==================================================
+
+For each theme, show 3–5 representative customer quotes.
+
+Requirements:
+
+- use actual text from uploaded data
+- show review ID
+- show date when available
+- show rating when available
+- show platform when available
+- avoid duplicate quotes
+- prioritize clear and representative examples
+- do not generate fake quotes
+- show a source reference inside the dashboard
+- allow users to inspect all matching feedback
+
+Every AI recommendation must be supported by evidence from the input data.
+
+==================================================
+21. DASHBOARD PAGES
+==================================================
+
+PAGE 1: OVERVIEW
+
+Show:
+
+- upload status
+- date range
+- total reviews
+- average rating
+- negative feedback percentage
+- feature-request count
+- top pain point
+- fastest-growing issue
+
+Charts:
+
+- feedback volume over time
+- sentiment distribution
+- rating distribution
+- top themes
+- sentiment trend
+- issue priority matrix
+
+Filters:
+
+- date
+- platform
+- rating
+- country
+- device
+- app version
+- theme
+- sentiment
+
+PAGE 2: PAIN POINTS
+
+Show a sortable table with:
+
+- rank
+- theme
+- subtheme
+- mentions
+- share of feedback
+- negative percentage
+- average rating
+- severity
+- trend
+- priority
+- business risk
+
+On selecting a pain point, show:
+
+- problem summary
+- representative quotes
+- affected segments
+- trend chart
+- likely business consequence
+- confidence level
+- recommended next action
+
+PAGE 3: FEATURE REQUESTS
+
+Show:
+
+- top requested features
+- number of requests
+- request trend
+- representative quotes
+- affected user segments
+- estimated priority
+- expected user value
+
+Provide filters.
+
+Allow CSV export.
+
+PAGE 4: AI RECOMMENDATIONS
+
+Generate a maximum of five recommendations.
+
+Each recommendation must contain:
+
+- Problem
+- Evidence
+- Frequency
+- Affected segments
+- Severity
+- Business risk
+- Recommended action
+- Expected user impact
+- Suggested product metric
+- Confidence
+- Limitations
+
+AI output must be structured.
+
+Use JSON or Pydantic-style validation.
+
+If the AI call fails, display deterministic recommendations generated from metrics.
+
+Never leave the page empty.
+
+PAGE 5: EXPERIMENT CENTER
+
+For a selected product issue, generate an A/B experiment proposal.
+
+Output:
+
+- Experiment name
+- Problem statement
+- Hypothesis
+- Control
+- Variant
+- Target users
+- Primary metric
+- Secondary metrics
+- Guardrail metrics
+- Expected direction
+- Minimum duration
+- Decision rule
+- Risks
+- Instrumentation requirements
+
+Do not claim a statistically correct sample size unless the required baseline and minimum detectable effect are provided.
+
+If data is unavailable, say:
+
+Sample-size calculation requires baseline conversion, expected uplift, significance level, and statistical power.
+
+Include a small sample-size calculator if time allows.
+
+PAGE 6: ASK YOUR DATA
+
+Allow natural-language questions such as:
+
+- What is the biggest customer problem?
+- Which issue is growing fastest?
+- What should the product team prioritize?
+- Which app version has the most complaints?
+- What are users requesting most often?
+- What complaints are common among Android users?
+- Which theme creates the highest trust risk?
+- What experiment should we run next?
+
+Do not give the LLM the entire raw dataset.
+
+Generate a compact context containing:
+
+- KPI summary
+- theme table
+- top quotes
+- segment breakdown
+- trend summary
+
+The AI must answer only from this context.
+
+Every answer should include:
+
+- direct answer
+- evidence
+- relevant metric
+- source review IDs
+- confidence or limitation
+
+Add this disclaimer:
+
+AI-generated analysis should support, not replace, product judgment.
+
+PAGE 7: EVALUATION
+
+Create a dedicated evaluation page.
+
+Show:
+
+- evaluation dataset size
+- theme-classification accuracy
+- sentiment agreement
+- quote-grounding score
+- recommendation-evidence coverage
+- unsupported-claim count
+- processing time
+- API success rate
+
+Allow users to manually review a sample of classifications.
+
+Include columns:
+
+- Review
+- Predicted theme
+- Expected theme
+- Correct?
+- Predicted sentiment
+- Expected sentiment
+- Correct?
+- Notes
+
+Provide an exportable evaluation sheet.
+
+==================================================
+22. AI PROMPT DESIGN
+==================================================
+
+Create all prompts in src/prompts.py.
+
+Do not hardcode prompts inside UI pages.
+
+Use the following system behavior:
+
+You are a senior product analyst.
+
+You analyze only the structured data and customer quotes provided to you.
+
+Do not invent metrics, users, percentages, causes, or customer quotes.
+
+Every recommendation must cite the evidence included in the context.
+
+Clearly distinguish:
+1. Observed fact
+2. Reasonable hypothesis
+3. Suggested action
+
+If evidence is insufficient, explicitly state that the conclusion is uncertain.
+
+Return output using the requested JSON structure.
+
+==================================================
+23. AI RECOMMENDATION JSON SCHEMA
+==================================================
+
+Use a schema similar to:
+
+{
+  "executive_summary": "string",
+  "recommendations": [
+    {
+      "title": "string",
+      "problem": "string",
+      "observed_evidence": [
+        {
+          "metric": "string",
+          "value": "string"
+        }
+      ],
+      "source_review_ids": ["string"],
+      "affected_segments": ["string"],
+      "business_risk": "string",
+      "recommended_action": "string",
+      "primary_metric": "string",
+      "confidence": 0.0,
+      "limitations": ["string"]
+    }
+  ]
+}
+
+Validate the response before displaying it.
+
+If validation fails:
+
+- retry once with a correction prompt
+- otherwise use deterministic fallback output
+
+==================================================
+24. GUARDRAILS
+==================================================
+
+Implement the following guardrails:
+
+1. Never generate customer quotes that do not exist.
+2. Never display unsupported percentages.
+3. Never claim causation from correlation.
+4. Label assumptions as hypotheses.
+5. Show review IDs for evidence.
+6. Show confidence levels.
+7. Show limitations.
+8. Limit recommendations to evidence-supported themes.
+9. Do not send sensitive user data unnecessarily.
+10. Mask email addresses and phone numbers before sending data to the AI.
+11. Handle API failure gracefully.
+12. Use deterministic fallback logic.
+13. Warn the user about small sample sizes.
+14. Warn when date coverage is insufficient for trend analysis.
+15. Warn when optional columns are missing.
+16. Avoid recommendations based on fewer than three feedback items unless marked as emerging issues.
+
+==================================================
+25. PII PROTECTION
+==================================================
+
+Before AI processing, mask:
+
+- email addresses
+- phone numbers
+- order IDs where recognizable
+- customer names where possible
+- URLs containing tokens
+
+Show a message:
+
+Personal information is masked before AI analysis.
+
+Do not log raw API keys.
+
+Do not hardcode secrets.
+
+Use .env.
+
+==================================================
+26. DATABASE LAYER
+==================================================
+
+Use DuckDB.
+
+Store processed feedback in a local DuckDB database.
+
+Suggested table: reviews
+
+review_id VARCHAR
+date TIMESTAMP
+rating DOUBLE
+original_text VARCHAR
+clean_text VARCHAR
+platform VARCHAR
+app_version VARCHAR
+country VARCHAR
+device VARCHAR
+user_segment VARCHAR
+sentiment VARCHAR
+sentiment_score DOUBLE
+primary_theme VARCHAR
+secondary_theme VARCHAR
+subtheme VARCHAR
+classification_confidence DOUBLE
+is_feature_request BOOLEAN
+feature_request_text VARCHAR
+
+Suggested table: themes
+
+theme VARCHAR
+frequency INTEGER
+share DOUBLE
+negative_percentage DOUBLE
+average_rating DOUBLE
+severity_score DOUBLE
+trend_score DOUBLE
+priority_score DOUBLE
+priority_label VARCHAR
+business_risk VARCHAR
+
+Suggested table: analysis_runs
+
+run_id VARCHAR
+created_at TIMESTAMP
+filename VARCHAR
+row_count INTEGER
+processing_time_seconds DOUBLE
+api_used BOOLEAN
+
+Create helper functions for:
+
+- creating tables
+- inserting data
+- querying themes
+- querying trends
+- querying segments
+- clearing current session data
+
+==================================================
+27. SQL DEMONSTRATION
+==================================================
+
+Include a page or expandable section showing representative SQL queries.
+
+Example query:
+
+SELECT
+    primary_theme,
+    COUNT(*) AS mentions,
+    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS share
+FROM reviews
+GROUP BY primary_theme
+ORDER BY mentions DESC;
+
+Example query:
+
+SELECT
+    app_version,
+    COUNT(*) AS total_reviews,
+    AVG(rating) AS avg_rating,
+    SUM(CASE WHEN sentiment = 'Negative' THEN 1 ELSE 0 END) AS negative_reviews
+FROM reviews
+GROUP BY app_version
+ORDER BY negative_reviews DESC;
+
+This is important because the project should visibly demonstrate SQL competency.
+
+==================================================
+28. EXPORTS
+==================================================
+
+Allow the user to download:
+
+- cleaned reviews CSV
+- analyzed reviews CSV
+- theme summary CSV
+- feature-request CSV
+- recommendation JSON
+- experiment-plan TXT or Markdown
+- evaluation sheet CSV
+- executive summary Markdown
+
+Use clear filenames containing the current date.
+
+==================================================
+29. ERROR HANDLING
+==================================================
+
+Handle:
+
+- missing API key
+- malformed CSV
+- empty CSV
+- unsupported encoding
+- missing text column
+- invalid dates
+- invalid ratings
+- model timeout
+- malformed AI response
+- DuckDB error
+- chart errors
+- missing optional columns
+- datasets with fewer than 10 rows
+- datasets with no dates
+- datasets with no ratings
+- datasets with only one sentiment class
+
+Do not show raw Python tracebacks to the user.
+
+Show friendly error messages.
+
+Log technical details safely.
+
+==================================================
+30. PERFORMANCE REQUIREMENTS
+==================================================
+
+Target:
+
+- 1,000 rows processed in under 10 seconds locally
+- 10,000 rows processed in under 45 seconds locally
+- dashboard filters update quickly
+- no repeated AI calls during normal page navigation
+- no repeated preprocessing when filters change
+
+Use:
+
+- st.cache_data
+- st.cache_resource
+- vectorized Pandas operations
+- batch processing
+- DuckDB queries
+- AI result caching
+
+Show a processing progress bar.
+
+==================================================
+31. USER INTERFACE REQUIREMENTS
+==================================================
+
+Use a wide layout.
+
+Create reusable UI utilities.
+
+Sidebar:
+
+- dataset upload
+- load sample data
+- column mapping
+- process data button
+- global filters
+- AI availability status
+- reset button
+
+Header:
+
+- product name
+- subtitle
+- short workflow explanation
+
+KPI cards:
+
+- consistent formatting
+- concise labels
+- helpful tooltips
+
+Charts:
+
+- clear titles
+- axis labels
+- no unnecessary clutter
+- responsive sizing
+- empty-state messages
+
+Tables:
+
+- sortable
+- formatted percentages
+- formatted scores
+- downloadable
+
+Use professional language.
+
+Do not overcrowd the interface.
+
+==================================================
+32. RECOMMENDED CHARTS
+==================================================
+
+Use Plotly.
+
+Create:
+
+1. Line chart: feedback volume over time
+2. Line chart: negative sentiment trend
+3. Bar chart: top themes
+4. Donut or bar chart: sentiment distribution
+5. Bar chart: rating distribution
+6. Scatter plot: frequency versus severity
+7. Heatmap: theme by segment
+8. Line chart: theme trends
+9. Bar chart: top feature requests
+10. Bubble chart: priority matrix where useful
+
+Every chart must handle empty datasets.
+
+==================================================
+33. EVALUATION FRAMEWORK
+==================================================
+
+Create a small labelled evaluation dataset with at least 40 reviews.
+
+For each item include:
+
+review_text
+expected_theme
+expected_sentiment
+expected_feature_request
+
+Calculate:
+
+- theme accuracy
+- sentiment accuracy
+- feature-request precision
+- feature-request recall
+- unsupported AI claim count
+- quote-grounding accuracy
+- recommendation evidence coverage
+
+Define:
+
+Quote-grounding accuracy =
+valid quoted reviews / total quoted reviews
+
+Recommendation evidence coverage =
+recommendations containing valid evidence / total recommendations
+
+Target metrics for MVP demonstration:
+
+- theme accuracy above 75%
+- sentiment accuracy above 80%
+- quote-grounding accuracy equal to 100%
+- recommendation evidence coverage equal to 100%
+
+Do not fabricate achieved scores.
+
+Calculate them from actual evaluation data.
+
+==================================================
+34. FAILURE MODES DOCUMENTATION
+==================================================
+
+Create docs/FAILURE_MODES.md.
+
+Document at least:
+
+- sarcasm
+- mixed sentiment
+- multilingual reviews
+- code-mixed Hindi-English reviews
+- spelling mistakes
+- vague reviews
+- multiple issues in one review
+- spam
+- coordinated review bombing
+- duplicate feedback
+- insufficient data
+- incorrect theme mapping
+- hallucinated recommendation
+- invalid trend conclusions
+- over-prioritizing high-frequency but low-impact feedback
+- under-prioritizing rare but critical safety issues
+
+For each failure mode include:
+
+- example
+- why it fails
+- current mitigation
+- future improvement
+
+==================================================
+35. MANUAL WORKFLOW COMPARISON
+==================================================
+
+Document the old manual workflow.
+
+Manual process:
+
+1. Export reviews.
+2. Clean Excel file.
+3. Read feedback one by one.
+4. Add manual tags.
+5. Count tags.
+6. Identify recurring complaints.
+7. Copy quotes.
+8. Create charts.
+9. Prepare recommendations.
+10. Design an experiment proposal.
+11. Present findings.
+
+Estimated time:
+3–6 hours for 500 reviews
+
+InsightFlow workflow:
+
+1. Upload CSV.
+2. Map columns.
+3. Click Process.
+4. Inspect metrics.
+5. Review evidence.
+6. Generate recommendations.
+7. Export findings.
+
+Estimated time:
+5–15 minutes
+
+Do not claim actual time savings until measured with users.
+
+Label this initially as a target hypothesis.
+
+==================================================
+36. DOCUMENTATION REQUIREMENTS
+==================================================
+
+Create a strong README.md.
+
+It must include:
+
+1. Project overview
+2. Problem statement
+3. Product workflow
+4. Features
+5. Screenshots placeholder section
+6. Architecture
+7. Tech stack
+8. Installation instructions
+9. macOS M4 setup
+10. Environment variables
+11. How to run
+12. Dataset format
+13. Sample questions
+14. Evaluation approach
+15. Failure modes
+16. Guardrails
+17. Future improvements
+18. Resume bullet
+19. Demo link placeholder
+20. Author placeholder
+
+==================================================
+37. EXACT macOS SETUP INSTRUCTIONS
+==================================================
+
+Include these commands in the README, adjusting package names if required:
+
+xcode-select --install
+
+brew install python@3.11
+
+git clone <repository-url>
+cd insightflow-ai
+
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+cp .env.example .env
+
+streamlit run app.py
+
+The application should open at:
+
+http://localhost:8501
+
+==================================================
+38. ENVIRONMENT VARIABLES
+==================================================
+
+Create .env.example:
+
+GEMINI_API_KEY=
+GEMINI_MODEL=
+ENABLE_AI=true
+MAX_AI_QUOTES_PER_THEME=5
+MAX_UPLOAD_ROWS=50000
+
+Use a sensible default model when GEMINI_MODEL is missing.
+
+Do not hardcode model names throughout the project.
+
+Keep model configuration centralized.
+
+==================================================
+39. REQUIREMENTS FILE
+==================================================
+
+Create a minimal, compatible requirements.txt.
+
+Include only packages actually required.
+
+Suggested packages:
+
+streamlit
+pandas
+numpy
+plotly
+duckdb
+scikit-learn
+python-dotenv
+pydantic
+google-genai
+vaderSentiment
+pytest
+
+Verify import names and current official SDK usage.
+
+Do not include packages that are not used.
+
+==================================================
+40. TESTING REQUIREMENTS
+==================================================
+
+Write tests for:
+
+Data validation:
+- valid dataset
+- missing feedback column
+- empty dataset
+- invalid rating
+- duplicates
+
+Metrics:
+- sentiment percentages
+- average rating
+- frequency calculation
+- score normalization
+
+Prioritization:
+- valid 0–100 range
+- correct priority label
+- rare critical issue handling
+
+Classification:
+- known payment complaint
+- known delivery complaint
+- known feature request
+- ambiguous review
+
+Tests must be runnable with:
+
+pytest -q
+
+==================================================
+41. DEMO FLOW
+==================================================
+
+Create docs/DEMO_SCRIPT.md.
+
+The demo should take 2–3 minutes.
+
+Script:
+
+1. Introduce the user problem.
+2. Load the sample dataset.
+3. Show validation and cleaning.
+4. Show overview KPIs.
+5. Show top pain points.
+6. Open one pain point.
+7. Show evidence-backed customer quotes.
+8. Show affected segments.
+9. Generate a recommendation.
+10. Generate an A/B test.
+11. Ask one natural-language question.
+12. Show evaluation and guardrails.
+13. Explain business value.
+
+End with:
+
+InsightFlow AI transforms raw customer feedback into evidence-backed product decisions while keeping humans in control.
+
+==================================================
+42. PRODUCT SUCCESS METRICS
+==================================================
+
+Document metrics without claiming they have already been achieved.
+
+Efficiency metrics:
+
+- time to analyze 500 reviews
+- time to create a product summary
+- percentage reduction in manual tagging time
+
+Quality metrics:
+
+- theme-classification accuracy
+- sentiment accuracy
+- quote-grounding accuracy
+- recommendation evidence coverage
+
+User metrics:
+
+- recommendation usefulness score
+- user trust score
+- task-completion rate
+- repeat usage
+- export usage
+
+Business outcome hypotheses:
+
+- faster prioritization
+- earlier issue detection
+- improved customer understanding
+- better experiment quality
+- reduced analyst workload
+
+==================================================
+43. HUMAN REVIEW WORKFLOW
+==================================================
+
+AI must not make final roadmap decisions autonomously.
+
+Implement a visible human-review step.
+
+For each recommendation, include controls such as:
+
+- Accept
+- Modify
+- Reject
+- Needs more evidence
+
+For the MVP, store decisions in Streamlit session state or a local structure.
+
+Allow export of reviewed recommendations.
+
+Explain:
+
+The system recommends; the product team decides.
+
+==================================================
+44. ONE-DAY DEVELOPMENT PRIORITY
+==================================================
+
+Build in this order.
+
+Phase 1: Foundation
+
+- repository structure
+- environment setup
+- requirements
+- Streamlit shell
+- sample dataset
+
+Phase 2: Data pipeline
+
+- upload
+- column mapping
+- validation
+- cleaning
+- preprocessing
+
+Phase 3: Core analytics
+
+- sentiment
+- taxonomy
+- classification
+- feature requests
+- metrics
+- severity
+- priority
+
+Phase 4: Dashboard
+
+- overview
+- pain points
+- feature requests
+- filters
+- charts
+- quotes
+
+Phase 5: AI layer
+
+- Gemini client
+- prompts
+- recommendation generation
+- experiment generation
+- fallback behavior
+
+Phase 6: Evaluation and exports
+
+- evaluation page
+- export functions
+- manual review
+
+Phase 7: Polish
+
+- README
+- docs
+- tests
+- error handling
+- UI cleanup
+
+Do not begin optional features before the core pipeline works.
+
+==================================================
+45. STRICT MVP BOUNDARY
+==================================================
+
+Mandatory:
+
+- CSV upload
+- sample dataset
+- validation
+- cleaning
+- sentiment
+- theme classification
+- metrics
+- pain-point ranking
+- representative quotes
+- dashboard
+- AI recommendations
+- experiment generator
+- evaluation page
+- exports
+- README
+- tests
+
+Optional only after mandatory features work:
+
+- natural-language SQL
+- PDF reports
+- user authentication
+- external API integrations
+- scheduled ingestion
+- multilingual model
+- Slack or Jira integration
+- advanced embeddings
+- cloud database
+- background jobs
+
+==================================================
+46. ACCEPTANCE CRITERIA
+==================================================
+
+The project is complete only when all of the following are true:
+
+- application launches without errors
+- sample dataset can be loaded with one click
+- CSV upload works
+- column mapping works
+- invalid files show useful errors
+- processed data contains sentiment and themes
+- overview metrics are correct
+- top pain points are visible
+- feature requests are visible
+- priority scores are within 0–100
+- representative quotes come from the uploaded dataset
+- filters update charts correctly
+- AI recommendations are evidence-backed
+- application works without an API key
+- experiment generator works
+- evaluation page displays measurable results
+- exports work
+- tests run successfully
+- README contains setup instructions
+- no API key is hardcoded
+- code is modular
+- code contains type hints where useful
+- user-facing errors do not show raw tracebacks
+- the project runs smoothly on Apple Silicon
+
+==================================================
+47. RESUME BULLET
+==================================================
+
+Include this suggested bullet in the README:
+
+Built InsightFlow AI, an AI-powered Voice of Customer and Product Analytics Copilot using Python, Streamlit, DuckDB, Plotly, and Gemini, automating customer-feedback classification, pain-point prioritization, evidence-backed product recommendations, and A/B experiment generation.
+
+Do not add unsupported metrics such as “reduced analysis time by 90%” until they have been tested.
+
+After user testing, the bullet may be updated with verified results.
+
+==================================================
+48. CODE QUALITY REQUIREMENTS
+==================================================
+
+Code must:
+
+- be modular
+- use clear names
+- contain meaningful docstrings
+- include type hints for key functions
+- avoid duplicated logic
+- avoid global mutable state where possible
+- use configuration variables
+- handle errors
+- separate data logic from UI logic
+- separate AI prompts from API functions
+- keep business formulas explainable
+- avoid excessive abstraction
+
+The code should be understandable by a technical interviewer.
+
+==================================================
+49. INSTRUCTIONS FOR YOUR RESPONSE AND WORK PROCESS
+==================================================
+
+Do not merely describe the solution.
+
+Generate the complete project.
+
+Work incrementally.
+
+For each phase:
+
+1. State which files are being created.
+2. Provide complete file contents.
+3. Ensure imports are correct.
+4. Ensure paths match the project structure.
+5. Explain how to test that phase.
+6. Do not use placeholders such as “implement later.”
+7. Do not omit code with comments such as “rest of code here.”
+8. Keep all code executable.
+9. Fix any cross-file inconsistencies before moving forward.
+10. Maintain a checklist of completed acceptance criteria.
+
+When modifying a file, provide the complete updated file rather than disconnected fragments.
+
+Before finishing:
+
+- review every import
+- review every filename
+- review every function call
+- review environment-variable usage
+- review Streamlit navigation
+- review Gemini SDK compatibility
+- review DuckDB schema
+- review all download buttons
+- review empty states
+- review error states
+- review tests
+- confirm exact run commands
+
+==================================================
+50. FIRST ACTION
+==================================================
+
+Begin by producing:
+
+1. A concise implementation plan.
+2. The complete project folder tree.
+3. requirements.txt.
+4. .env.example.
+5. .gitignore.
+6. README.md.
+7. data/sample_reviews.csv.
+8. The core Streamlit application shell.
+9. The data validation and cleaning modules.
+
+Then continue through the remaining phases without changing the agreed architecture unless a clear technical issue requires it.
+
+The final result must be a complete, runnable, polished product—not a tutorial, pseudocode sample, or incomplete prototype.
+
+==================================================
+FINAL EXECUTION INSTRUCTION
+==================================================
+
+Build the project phase by phase.
+
+Do not generate everything in one huge response if that risks truncation.
+
+Start with Phase 1 and wait for confirmation that the application runs before moving to Phase 2.
+
+For every phase, give the exact commands required to run it on a MacBook M4.
+
+You have permission to create and modify files inside the current project directory.
+
+After each phase, run the relevant tests and inspect errors before continuing.
+
+Never delete working functionality while adding a new feature.
+
+Do not change the stack unless there is a clear compatibility issue.
+
+At the end of every phase, provide:
+
+- files created
+- files modified
+- exact terminal commands
+- test results
+- known issues
+- next phase objective
