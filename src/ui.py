@@ -1,4 +1,4 @@
-"""Reusable Streamlit presentation and Phase 2 workflow components."""
+"""Reusable Streamlit presentation and local analysis workflow components."""
 
 from collections.abc import Iterable
 from dataclasses import asdict
@@ -8,6 +8,7 @@ import logging
 import streamlit as st
 
 from src.config import get_settings
+from src.analysis_pipeline import AnalysisResult, analyze_feedback
 from src.data_cleaner import CleaningReport, clean_feedback_data
 from src.data_loader import (
     EXPECTED_FIELDS,
@@ -39,6 +40,25 @@ FIELD_LABELS: dict[str, str] = {
 def _cached_sample_data(max_rows: int) -> LoadResult:
     """Cache deterministic loading of the bundled sample CSV."""
     return load_sample_data(max_rows=max_rows)
+
+
+@st.cache_data(show_spinner=False)
+def _cached_analysis(dataframe) -> AnalysisResult:
+    """Cache deterministic local analysis by cleaned DataFrame content."""
+    return analyze_feedback(dataframe)
+
+
+def _clear_analysis_state() -> None:
+    """Invalidate analytics when source, mapping, or cleaning changes."""
+    st.session_state["analyzed_reviews"] = None
+    st.session_state["overall_metrics"] = None
+    st.session_state["theme_summary"] = None
+    st.session_state["feature_request_summary"] = None
+    st.session_state["trend_summary"] = None
+    st.session_state["representative_quotes"] = {}
+    st.session_state["analytics_warnings"] = []
+    st.session_state["analytics_processing_time"] = None
+    st.session_state["analysis_complete"] = False
 
 
 def _upload_signature(filename: str, content: bytes) -> str:
@@ -75,6 +95,7 @@ def _store_load_result(result: LoadResult, *, signature: str) -> None:
     st.session_state["cleaning_report"] = None
     st.session_state["data_loaded"] = True
     st.session_state["data_processed"] = False
+    _clear_analysis_state()
     st.session_state["processing_error"] = None
     st.session_state["source_signature"] = signature
 
@@ -112,6 +133,7 @@ def _render_mapping_controls() -> dict[str, str | None]:
         st.session_state["cleaned_reviews"] = None
         st.session_state["cleaning_report"] = None
         st.session_state["data_processed"] = False
+        _clear_analysis_state()
     return mapping
 
 
@@ -204,6 +226,30 @@ def _run_cleaning(mapping: dict[str, str | None]) -> None:
     st.session_state["cleaned_reviews"] = result.dataframe
     st.session_state["cleaning_report"] = result.report
     st.session_state["data_processed"] = True
+    _clear_analysis_state()
+    st.session_state["processing_error"] = None
+
+
+def _run_analysis() -> None:
+    """Run and store deterministic local analytics with safe error handling."""
+    try:
+        with st.spinner("Analyzing sentiment, themes, requests, trends, and priorities…"):
+            result = _cached_analysis(st.session_state["cleaned_reviews"])
+    except (KeyError, TypeError, ValueError) as error:
+        LOGGER.error("Local analysis failed with %s", type(error).__name__)
+        st.session_state["processing_error"] = (
+            "Feedback analysis could not be completed. Reset the data and try again."
+        )
+        return
+    st.session_state["analyzed_reviews"] = result.analyzed_reviews
+    st.session_state["overall_metrics"] = result.overall_metrics
+    st.session_state["theme_summary"] = result.theme_summary
+    st.session_state["feature_request_summary"] = result.feature_request_summary
+    st.session_state["trend_summary"] = result.trend_outputs
+    st.session_state["representative_quotes"] = result.representative_quotes
+    st.session_state["analytics_warnings"] = result.warnings
+    st.session_state["analytics_processing_time"] = result.report.processing_time_seconds
+    st.session_state["analysis_complete"] = True
     st.session_state["processing_error"] = None
 
 
@@ -279,6 +325,18 @@ def render_sidebar() -> None:
 
             if st.session_state["data_processed"]:
                 st.success("Cleaned data is ready.")
+                if st.button(
+                    "Analyze feedback",
+                    type="primary",
+                    width="stretch",
+                    disabled=st.session_state["analysis_complete"],
+                ):
+                    _run_analysis()
+                if st.session_state["analysis_complete"]:
+                    st.success("Local feedback analysis is ready.")
+                    st.caption(
+                        f"Analyzed in {st.session_state['analytics_processing_time']:.3f} seconds."
+                    )
 
         if st.session_state.get("processing_error"):
             st.error(st.session_state["processing_error"])
@@ -290,8 +348,8 @@ def render_sidebar() -> None:
         st.divider()
         status = "Available" if settings.ai_available else "Not configured"
         st.caption(f"Optional AI: {status}")
-        st.caption("CSV loading and cleaning run locally on this device.")
-        st.caption("No data is sent to Gemini in Phase 2.")
+        st.caption("Loading, cleaning, and analysis run locally on this device.")
+        st.caption("No data is sent to Gemini in Phase 3.")
 
 
 def render_app_header(*, section: str | None = None) -> None:

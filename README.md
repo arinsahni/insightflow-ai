@@ -7,9 +7,9 @@ managers and analysts. It is designed to turn customer feedback into recurring
 pain points, measurable priorities, grounded recommendations, and experiment
 ideas while keeping product teams in control.
 
-> Phase 2 status: CSV upload, sample-data loading, flexible column mapping,
-> validation, deterministic cleaning, preview, and cleaned CSV download are
-> available. Analytics and machine learning remain reserved for later phases.
+> Phase 3 status: the complete local analysis pipeline is available, including
+> hybrid sentiment, taxonomy classification, feature requests, trends,
+> explainable severity and priority, business risk, and grounded quotes.
 
 ## Problem statement
 
@@ -33,15 +33,16 @@ metrics.
 - CSV ingestion with UTF-8, UTF-8-SIG, and Latin-1 handling
 - Automatic mapping suggestions with editable, unique column mappings
 - Structured validation and deterministic cleaning
-- Local sentiment and theme classification (planned)
+- Local VADER and rating-assisted sentiment
+- Rule-based taxonomy classification with taxonomy-only TF-IDF fallback
+- Explicit feature-request detection and grouping
 - Pain-point and feature-request prioritization
 - Source-linked representative quotes
 - Product analytics dashboards and filters
 - Optional Gemini-supported recommendations with deterministic fallback
 - Experiment proposals, evaluation, and exports
 
-Phase 2 provides data preparation across the application shell without showing
-fabricated metrics or adding analytics early.
+Phase 3 provides deterministic core analytics without external calls.
 
 ## Screenshots
 
@@ -164,6 +165,49 @@ and URLs, normalizes Unicode and whitespace, parses dates, constrains ratings to
 not remove stop words, stem, lemmatize, calculate sentiment, classify themes, or
 send data to an API.
 
+## Local analysis
+
+Select **Analyze feedback** after cleaning. The pipeline:
+
+1. combines VADER text polarity, short-text corrections, and valid ratings;
+2. detects explicit feature-request intent and normalized groups;
+3. classifies taxonomy phrases and keywords;
+4. uses TF-IDF similarity against taxonomy descriptions for unresolved text;
+5. calculates aggregate and theme metrics, bounded trends, severity, priority,
+   and primary business risk; and
+6. selects unmodified source quotes with review IDs.
+
+TF-IDF references come only from the maintained taxonomy, never from the
+uploaded or bundled review data.
+
+### Severity
+
+```text
+0.30 × negative sentiment
++ 0.25 × rating impact
++ 0.20 × frequency
++ 0.15 × trend
++ 0.10 × critical terms
+```
+
+### Priority
+
+```text
+0.30 × frequency
++ 0.30 × severity
++ 0.20 × trend
++ 0.10 × business risk
++ 0.10 × classification confidence
+```
+
+All components are normalized to 0–100. Rare safety, fraud, food-poisoning,
+duplicate-charge, blocked-account, and similar critical evidence receives a
+documented minimum priority safeguard. Severity and priority are prioritization
+aids, not objective truth.
+
+Primary risk labels include revenue, retention, trust, operational, conversion,
+customer-satisfaction, and low-direct-business-risk categories.
+
 ## Sample questions
 
 - What is the biggest customer problem?
@@ -198,9 +242,9 @@ one review, and insufficient trend data. See
 
 ## Future improvements
 
-The next phase adds local sentiment, taxonomy classification, feature-request
-detection, product metrics, severity, and priority logic. Dashboards, optional
-AI support, evaluation, and broader exports follow in their own phases.
+The next phase builds the polished dashboard: filters, Plotly charts, richer
+segment exploration, and responsive visual states. Optional AI support,
+evaluation, and broader exports follow in their own phases.
 Potential post-MVP work includes multilingual models, scheduled ingestion,
 integrations, and user authentication.
 
@@ -210,8 +254,13 @@ integrations, and user authentication.
 - `review_text` must be mapped before validation.
 - Dates and ratings that cannot be safely parsed are cleared, not inferred.
 - Duplicate removal is exact-row based; near-duplicate detection is not present.
-- No sentiment, theme, feature-request, trend, score, database, or AI processing
-  is implemented yet.
+- Rule and TF-IDF classification can miss sarcasm, spelling variants,
+  multilingual meaning, and taxonomy gaps.
+- Trends are neutral when usable date coverage is under 14 days.
+- Scores depend on documented heuristic weights that require product-team
+  calibration.
+- No Gemini, recommendations, experiments, DuckDB persistence, or advanced
+  exports are implemented.
 
 ## Resume bullet
 

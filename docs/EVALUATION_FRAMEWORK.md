@@ -22,5 +22,13 @@ Quote-grounding accuracy is valid quoted reviews divided by total quoted reviews
 Recommendation evidence coverage is recommendations containing valid evidence
 divided by total recommendations.
 
-Phase 1 tests configuration behavior and application foundations only. Metric
-evaluation begins with the relevant analytics phases.
+Phase 3 automated tests cover required short-text sentiment behavior, canonical
+theme examples, mixed-review secondary themes, request groups, metric
+arithmetic, score bounds and thresholds, rare-critical safeguards, insufficient
+trend coverage, zero-baseline growth, quote source grounding, and pipeline input
+immutability.
+
+These behavioral tests are not a measured accuracy evaluation. A later phase
+will run a separately labelled dataset to calculate theme accuracy, sentiment
+agreement, feature-request precision/recall, and the grounding measures above.
+No target score is claimed as achieved yet.

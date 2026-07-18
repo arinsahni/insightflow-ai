@@ -1,4 +1,4 @@
-"""Phase 2 dataset overview and preparation audit."""
+"""Phase 3 feedback analysis overview."""
 
 from datetime import date
 
@@ -50,7 +50,7 @@ elif not st.session_state["data_processed"]:
     else:
         st.subheader("Validation summary")
         render_validation_summary(validation_result)
-else:
+elif not st.session_state["analysis_complete"]:
     cleaned_reviews = st.session_state["cleaned_reviews"]
     cleaning_report = st.session_state["cleaning_report"]
     st.success("The cleaned dataset is ready for review and download.")
@@ -67,4 +67,46 @@ else:
         mime="text/csv",
         width="stretch",
     )
-    st.caption("No sentiment, themes, scores, or analytics have been added in Phase 2.")
+    render_phase_notice(
+        "Ready for analysis",
+        "Select **Analyze feedback** in the sidebar to calculate local metrics.",
+    )
+else:
+    metrics = st.session_state["overall_metrics"]
+    themes = st.session_state["theme_summary"]
+    analyzed = st.session_state["analyzed_reviews"]
+    st.success("Local analysis is complete. No API key was used.")
+    cards = st.columns(6)
+    cards[0].metric("Feedback", f"{metrics.total_feedback_items:,}")
+    cards[1].metric("Average rating", f"{metrics.average_rating:.2f}" if metrics.average_rating is not None else "N/A")
+    cards[2].metric("Negative feedback", f"{metrics.negative_feedback_percentage:.1f}%")
+    cards[3].metric("Feature requests", f"{metrics.feature_request_count:,}")
+    cards[4].metric("Top pain point", metrics.most_frequent_pain_point or "N/A")
+    cards[5].metric("Fastest-growing issue", metrics.fastest_growing_pain_point or "Insufficient data")
+
+    st.subheader("Sentiment distribution")
+    sentiment = (
+        analyzed["sentiment"].value_counts().rename_axis("sentiment").reset_index(name="count")
+    )
+    sentiment["percentage"] = sentiment["count"] / len(analyzed) * 100
+    st.dataframe(sentiment, width="stretch", hide_index=True)
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader("Top themes")
+        st.dataframe(
+            themes[["theme", "frequency", "share_percentage", "negative_percentage"]].head(10),
+            width="stretch", hide_index=True,
+        )
+    with right:
+        st.subheader("Priority summary")
+        priority_themes = themes[
+            ~themes["theme"].isin(["Positive Feedback", "Feature Request", "Other"])
+        ]
+        st.dataframe(
+            priority_themes[["theme", "severity_score", "priority_score", "priority_label", "business_risk"]].head(10),
+            width="stretch", hide_index=True,
+        )
+    for warning in st.session_state["analytics_warnings"]:
+        st.warning(warning)
+    st.caption("Severity and priority are prioritization aids, not objective truth.")

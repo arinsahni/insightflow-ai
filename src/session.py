@@ -12,12 +12,21 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "validation_result": None,
     "cleaned_reviews": None,
     "cleaning_report": None,
+    "analyzed_reviews": None,
+    "overall_metrics": None,
+    "theme_summary": None,
+    "feature_request_summary": None,
+    "trend_summary": None,
+    "representative_quotes": {},
+    "analytics_warnings": [],
+    "analytics_processing_time": None,
     "data_loaded": False,
     "data_processed": False,
+    "analysis_complete": False,
     "processing_error": None,
     "source_signature": None,
     "uploader_generation": 0,
-    "phase": 2,
+    "phase": 3,
 }
 
 

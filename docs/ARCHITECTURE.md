@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 2
+## Phase 3
 
 The application is a Python 3.11 Streamlit multipage app:
 
@@ -11,6 +11,15 @@ src/config.py          Validated environment configuration and row limit
 src/data_loader.py     CSV decoding, limits, and mapping suggestions
 src/data_validator.py  Non-mutating structured validation
 src/data_cleaner.py    Deterministic canonical cleaning and audit report
+src/sentiment.py       VADER, keyword, and rating hybrid sentiment
+src/taxonomy.py        Maintained themes, subthemes, risks, and critical terms
+src/classifier.py      Rule matching and taxonomy-only TF-IDF fallback
+src/feature_requests.py Request intent and normalized grouping
+src/trends.py          Bounded date-aware trend calculations
+src/prioritization.py  Explainable severity and priority components
+src/metrics.py         Overall, theme, and request aggregates
+src/quotes.py          Deterministic grounded quote selection
+src/analysis_pipeline.py Phase 3 orchestration and processing report
 src/session.py         Data workflow session state and reset behavior
 src/ui.py              Shared visual components and sidebar orchestration
 data/                  Fictional source data and ignored processed outputs
@@ -67,11 +76,32 @@ reruns do not discard work. Session state stores:
 Changing a mapping invalidates prior validation and cleaning results. Reset
 clears only the data workflow and rotates the uploader key.
 
+## Analytics orchestration
+
+The explicit **Analyze feedback** action runs `analyze_feedback`; analysis never
+runs merely because a page rerenders. The function copies its cleaned input,
+adds sentiment, request, and classification fields, then calculates trends,
+metrics, prioritization, and quote indexes. `st.cache_data` caches deterministic
+results by cleaned DataFrame content.
+
+Sentiment uses local VADER output, short-text and negation corrections, and a
+bounded rating adjustment. Classification first scores exact phrases and whole
+keywords. Unresolved reviews are compared with TF-IDF vectors built only from
+taxonomy descriptions. No uploaded data trains the classifier.
+
+Trends compare a recent 14-day window with the preceding window using
+add-one-smoothed, capped growth. Coverage below 14 days returns score 50 and a
+warning. Severity and priority retain every normalized component and readable
+explanations. A rare-critical floor prevents infrequent safety or trust events
+from defaulting to low priority.
+
+Session state additionally stores analyzed reviews, overall metrics, theme and
+feature summaries, trend outputs, grounded quote indexes, warnings, and runtime.
+
 ## Planned boundaries
 
-Later phases will add separate modules for classification and metrics, charts
-and filtering, optional AI, DuckDB, and broader exports. Business logic remains
-independent from Streamlit page code.
+Later phases add charts and filtering, optional AI, DuckDB, and broader exports.
+Business logic remains independent from Streamlit page code.
 
 ## Runtime constraints
 

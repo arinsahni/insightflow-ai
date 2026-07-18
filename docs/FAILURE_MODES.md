@@ -19,4 +19,6 @@ This starter register will be expanded alongside the related implementation.
 | Hallucinated recommendation | Action cites nonexistent evidence | Generative output can invent support. | Require source IDs and deterministic fallback. | Validate every cited item. |
 | Invalid trend conclusion | Growth inferred from a short date range | Sparse time data is noisy. | Plan coverage warnings. | Require sufficient periods and volume. |
 | Frequency over impact | Many dark-mode requests outrank payment loss | Volume alone ignores severity. | Plan explainable multi-factor priority. | Validate weights with product teams. |
-| Rare critical safety issue | One food-poisoning report is ranked low | Frequency suppresses critical events. | Plan critical-risk overrides. | Add reviewed safety escalation rules. |
+| Rare critical safety issue | One food-poisoning report is ranked low | Frequency suppresses critical events. | A transparent rare-critical floor prevents low priority. | Add reviewed safety escalation rules. |
+| Keyword collision | “The card design is great” matches card payment language | Shared words can imply the wrong theme. | Exact phrases outrank isolated keywords and confidence is visible. | Expand labelled collision tests. |
+| Taxonomy gap | A request names an unsupported capability | No maintained theme is an exact fit. | Use `Other` or `Other feature request` with lower confidence. | Review unmatched feedback and extend taxonomy. |
