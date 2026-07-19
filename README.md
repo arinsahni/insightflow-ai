@@ -7,9 +7,8 @@ managers and analysts. It is designed to turn customer feedback into recurring
 pain points, measurable priorities, grounded recommendations, and experiment
 ideas while keeping product teams in control.
 
-> Phase 4.6 status: the bundled demonstration data now contains 10,000 primary
-> synthetic fintech reviews plus controlled quality issues. Generation is
-> deterministic, local, and safe for a public portfolio.
+> Phase 4.7 status: feature requests now use an expanded, deterministic
+> product-opportunity taxonomy while remaining fully local and source-grounded.
 
 ## Problem statement
 
@@ -240,6 +239,59 @@ Select **Analyze feedback** after cleaning. The pipeline:
 
 TF-IDF references come only from the maintained taxonomy, never from the
 uploaded or bundled review data.
+
+## Feature Request Taxonomy
+
+Feature requests are classified locally with explainable phrase, keyword, and
+keyword-combination rules. Text matching uses a normalized copy with lowercase
+Unicode, punctuation, apostrophe, hyphen, whitespace, abbreviation, and light
+typo handling; the original review remains unchanged for quotes and exports.
+Capability classification requires explicit request intent, so resolution
+complaints such as “I need my refund” or “Payment should not fail” are not
+treated as product requests.
+
+The canonical groups are:
+
+- Data Export and Reports
+- Budgeting and Spending Insights
+- Scheduled and Recurring Payments
+- Dark Mode and Appearance
+- Multi-Currency and International Support
+- Card Controls
+- Search, Filters, and Sorting
+- Widgets and Quick Access
+- Family and Shared Accounts
+- Team and Business Access
+- API and Integrations
+- Notifications and Custom Alerts
+- Security and Biometric Controls
+- Bank and Account Management
+- Personalization
+- Statements and Transaction History
+- Rewards and Loyalty
+- Customer Support Improvements
+- Payment Methods and Wallets
+- Other feature request
+
+Distinctive phrases score above generic keywords. Fixed category priorities
+break equal scores deterministically, and explicit export/download/PDF/CSV
+language takes precedence over integrations, business access, or statement
+viewing. Confidence is a heuristic description of match strength—not a trained
+model probability. “Other feature request” is used only when request intent is
+clear but no category reaches the minimum score.
+
+Examples:
+
+- “Please add CSV export.” → Data Export and Reports
+- “Would love monthly budget insights.” → Budgeting and Spending Insights
+- “Need QuickBooks integration.” → API and Integrations
+- “Please add a family wallet.” → Family and Shared Accounts
+- “Allow recurring bank transfers.” → Scheduled and Recurring Payments
+- “Let me view statements from the last two years.” → Statements and Transaction History
+
+The classifier uses no LLM, embeddings, API key, or network service. As a
+maintained heuristic taxonomy, it may still miss novel phrasing, implicit
+requests, multilingual nuance, and capabilities outside the configured groups.
 
 ### Severity
 

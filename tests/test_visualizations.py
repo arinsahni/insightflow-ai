@@ -56,6 +56,23 @@ def test_chart_inputs_are_not_mutated() -> None:
     pd.testing.assert_frame_equal(source, original)
 
 
+def test_feature_request_chart_keeps_long_category_labels_readable() -> None:
+    summary = pd.DataFrame({
+        "feature_request_group": [
+            "Multi-Currency and International Support",
+            "Scheduled and Recurring Payments",
+        ],
+        "mentions": [12, 8],
+    })
+    original = summary.copy(deep=True)
+    figure = top_feature_requests_chart(summary)
+
+    assert figure.layout.margin.l >= 200
+    assert figure.layout.yaxis.automargin
+    assert set(figure.data[0].y) == set(summary["feature_request_group"])
+    pd.testing.assert_frame_equal(summary, original)
+
+
 def test_negative_trend_is_weekly_aggregate_not_review_level() -> None:
     source = pd.DataFrame({
         "date": pd.date_range("2025-01-01", periods=21, freq="D"),

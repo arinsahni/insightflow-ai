@@ -151,7 +151,10 @@ def top_feature_requests_chart(summary: pd.DataFrame) -> go.Figure:
     prepared = summary.sort_values("mentions").tail(10)
     figure = px.bar(prepared, x="mentions", y="feature_request_group", orientation="h", labels={"mentions": "Mentions", "feature_request_group": "Request"})
     figure.update_traces(marker_color=COLORS["primary"])
-    return _style(figure, "Top Requested Product Features")
+    figure = _style(figure, "Top Requested Product Features")
+    figure.update_layout(height=420, margin=dict(l=230, r=30, t=60, b=45))
+    figure.update_yaxes(automargin=True)
+    return figure
 
 
 def priority_matrix_chart(theme_summary: pd.DataFrame) -> go.Figure:

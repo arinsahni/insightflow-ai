@@ -28,6 +28,9 @@ def test_pipeline_produces_analysis_without_mutating_input_or_gemini() -> None:
         "sentiment", "sentiment_score", "negativity_score", "primary_theme",
         "secondary_theme", "subtheme", "classification_confidence",
         "classification_method", "is_feature_request", "feature_request_text",
+        "feature_request_detected", "feature_request_confidence",
+        "feature_request_group", "feature_request_method",
+        "feature_request_matched_terms", "feature_request_score",
     }
     assert required.issubset(result.analyzed_reviews.columns)
     assert result.overall_metrics.total_feedback_items == 3

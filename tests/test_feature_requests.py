@@ -8,9 +8,9 @@ from src.feature_requests import detect_feature_request
 @pytest.mark.parametrize(
     ("text", "group"),
     [
-        ("Please add scheduled ordering because I order lunch daily.", "Scheduled delivery"),
-        ("Wish there was a dark mode.", "Dark mode"),
-        ("Can you add a one tap reorder option?", "Reorder"),
+        ("Please add scheduled ordering because I order lunch daily.", "Scheduled and Recurring Payments"),
+        ("Wish there was a dark mode.", "Dark Mode and Appearance"),
+        ("Can you add a one tap reorder option?", "Scheduled and Recurring Payments"),
     ],
 )
 def test_known_request_groups(text, group) -> None:

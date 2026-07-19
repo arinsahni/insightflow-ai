@@ -8,7 +8,7 @@ from time import perf_counter
 import pandas as pd
 
 from src.classifier import add_classification_columns
-from src.feature_requests import add_feature_request_columns
+from src.feature_request_classifier import add_feature_request_columns
 from src.metrics import (
     OverallMetrics,
     calculate_feature_request_summary,
