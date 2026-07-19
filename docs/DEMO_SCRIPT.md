@@ -1,6 +1,6 @@
 # Demo Script
 
-Target duration for the Phase 4.7 dashboard: 2–3 minutes.
+Target duration for the Phase 5.0 dashboard and developer handoff: 2–3 minutes.
 
 1. Load the fully synthetic 10,000-review fintech sample dataset.
 2. Validate and clean it.
@@ -22,6 +22,9 @@ Target duration for the Phase 4.7 dashboard: 2–3 minutes.
 12. Select one request group, open its exact synthetic source reviews, note the
     intentionally improved sentiment after 3.4.0, and export the selected
     findings.
+13. In a developer view or terminal, build the validated `InsightContext`, show
+    compact payload metadata and several grounded review IDs, and emphasize
+    that no model invocation occurs in Phase 5.0.
 
 End with:
 
@@ -30,4 +33,4 @@ End with:
 
 All findings in this demo come from deterministic synthetic records, not real
 customers. Do not imply that AI recommendations or experiments are available
-in Phase 4.7.
+in Phase 5.0.

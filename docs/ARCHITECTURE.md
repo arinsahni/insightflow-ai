@@ -20,6 +20,9 @@ src/prioritization.py  Explainable severity and priority components
 src/metrics.py         Overall, theme, and request aggregates
 src/quotes.py          Deterministic grounded quote selection
 src/analysis_pipeline.py Phase 3 orchestration and processing report
+src/ai_models.py        Validated grounding and payload contracts
+src/insight_context.py  Evidence extraction, compaction, and JSON serialization
+src/ai_prompts.py       Pure grounded prompt builders; no model invocation
 src/filters.py          Global filter options, application, and summaries
 src/visualizations.py   Safe reusable Plotly figure factories
 src/session.py         Data workflow session state and reset behavior
@@ -112,10 +115,39 @@ styled figure even for empty or incomplete input. Pages own layout, selection,
 and UTF-8 CSV downloads. Reset Filters rotates filter widget keys and preserves
 all loaded, cleaned, and analyzed data.
 
+## AI-readiness flow
+
+```text
+Analytics Pipeline
+    ↓
+Insight Context Builder
+    ↓
+Validated InsightContext
+    ↓
+Compact JSON Payload
+    ↓
+Prompt Builder
+    ↓
+Future Gemini Integration
+```
+
+The context builder consumes analyzed rows and reuses existing metric, trend,
+priority, and classification outputs. Pydantic contracts enforce finite,
+JSON-safe values and bounded shares. Exact review text and IDs form the quote
+evidence layer. Deterministic release stories compare observed version metrics
+with adjacent releases and do not infer technical causes.
+
+Compaction preserves summaries, methodology, limitations, minimum pain-point
+and feature-request coverage, and minimum grounded quotes. Optional evidence is
+reduced in a stable order until the payload fits its character budget. Prompt
+builders delimit the resulting JSON as untrusted evidence and never contact an
+external model.
+
 ## Planned boundaries
 
-Later phases add charts and filtering, optional AI, DuckDB, and broader exports.
-Business logic remains independent from Streamlit page code.
+Later phases may pass the validated payload to optional AI, DuckDB, and broader
+exports. Phase 5.0 itself performs no model or network call. Business logic
+remains independent from Streamlit page code.
 
 ## Runtime constraints
 

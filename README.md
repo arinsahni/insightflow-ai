@@ -293,6 +293,44 @@ The classifier uses no LLM, embeddings, API key, or network service. As a
 maintained heuristic taxonomy, it may still miss novel phrasing, implicit
 requests, multilingual nuance, and capabilities outside the configured groups.
 
+## AI Readiness Layer
+
+Phase 5.0 converts existing analyzed feedback into a compact, validated
+`InsightContext` without invoking a model. It extracts dataset, sentiment,
+rating, pain-point, priority, feature-request, segment, release-pattern,
+data-quality, methodology, limitation, and exact quote evidence from existing
+analytics.
+
+Pydantic models reject negative counts, invalid shares or confidence values,
+blank quote identifiers, blank quote text, NaN, and Infinity. Serialization
+produces Unicode-preserving JSON, while deterministic context compaction removes
+lower-priority optional evidence in a documented order and estimates tokens as
+`ceil(character_count / 4)`.
+
+Four pure prompt builders prepare future executive, risk, opportunity, and
+release-review tasks. They require evidence IDs, separate observations from
+hypotheses, prohibit invented metrics and causes, and explicitly treat customer
+review text as untrusted evidence. Phase 5.0 performs no Gemini or external
+model call.
+
+```python
+from src.insight_context import (
+    build_insight_context,
+    compact_insight_context,
+    serialize_insight_context,
+)
+from src.ai_prompts import build_executive_summary_prompt
+
+context = build_insight_context(analyzed_df)
+payload, metadata = compact_insight_context(context)
+serialized = serialize_insight_context(context)
+prompt = build_executive_summary_prompt(payload)
+```
+
+Quotes remain exact source text with source review IDs. Release stories are
+thresholded comparisons of observed version metrics and deliberately avoid
+technical root-cause claims.
+
 ### Severity
 
 ```text
