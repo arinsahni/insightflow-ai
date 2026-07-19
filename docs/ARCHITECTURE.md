@@ -23,6 +23,10 @@ src/analysis_pipeline.py Phase 3 orchestration and processing report
 src/ai_models.py        Validated grounding and payload contracts
 src/insight_context.py  Evidence extraction, compaction, and JSON serialization
 src/ai_prompts.py       Pure grounded prompt builders; no model invocation
+src/ai_response_models.py Strict Gemini response and report contracts
+src/gemini_client.py     Lazy official-SDK boundary with bounded retries
+src/ai_response_validator.py Evidence-ID, quote, metric, and causality checks
+src/executive_report.py  Preparation, fingerprinting, orchestration, exports
 src/filters.py          Global filter options, application, and summaries
 src/visualizations.py   Safe reusable Plotly figure factories
 src/session.py         Data workflow session state and reset behavior
@@ -143,11 +147,37 @@ reduced in a stable order until the payload fits its character budget. Prompt
 builders delimit the resulting JSON as untrusted evidence and never contact an
 external model.
 
-## Planned boundaries
+## Gemini executive-insight flow
 
-Later phases may pass the validated payload to optional AI, DuckDB, and broader
-exports. Phase 5.0 itself performs no model or network call. Business logic
-remains independent from Streamlit page code.
+```text
+Analytics Pipeline
+    ↓
+InsightContext Builder
+    ↓
+Compact Grounded Payload
+    ↓
+Executive Prompt Builder
+    ↓
+GeminiExecutiveClient
+    ↓
+Structured Pydantic Response
+    ↓
+Evidence Validator
+    ↓
+ExecutiveReport
+    ↓
+Executive Insights UI
+```
+
+Preparation is deterministic and external-call free. A SHA-256 fingerprint
+hashes canonical compact JSON while excluding only `generated_at_utc`, so
+filters, rows, quotes, and analytical changes mark reports stale. The SDK
+client initializes lazily after an explicit click, uses no tools, and applies
+at most two transient retries.
+
+The report, fingerprint, generation time, safe error, and request metadata
+persist in session state. API keys and full prompts never enter state or logs.
+DuckDB, chat, experiments, and persistence remain later boundaries.
 
 ## Runtime constraints
 

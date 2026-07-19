@@ -66,6 +66,11 @@ def _clear_analysis_state() -> None:
     st.session_state["filtered_reviews"] = None
     st.session_state["filtered_theme_summary"] = None
     st.session_state["active_filters"] = default_filters()
+    st.session_state["executive_report"] = None
+    st.session_state["executive_report_fingerprint"] = None
+    st.session_state["executive_report_generated_at"] = None
+    st.session_state["executive_report_error"] = None
+    st.session_state["executive_request_metadata"] = None
 
 
 def _upload_signature(filename: str, content: bytes) -> str:
@@ -446,7 +451,7 @@ def render_sidebar() -> None:
         status = "Available" if settings.ai_available else "Not configured"
         st.caption(f"Optional AI: {status}")
         st.caption("Loading, cleaning, and analysis run locally on this device.")
-        st.caption("No data is sent to Gemini in Phase 3.")
+        st.caption("Data is sent to Gemini only after an explicit Generate click.")
 
 
 def render_app_header(*, section: str | None = None) -> None:

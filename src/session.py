@@ -25,6 +25,11 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "filtered_theme_summary": None,
     "selected_pain_point": None,
     "selected_feature_request_group": None,
+    "executive_report": None,
+    "executive_report_fingerprint": None,
+    "executive_report_generated_at": None,
+    "executive_report_error": None,
+    "executive_request_metadata": None,
     "filter_generation": 0,
     "data_loaded": False,
     "data_processed": False,
@@ -32,7 +37,7 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "processing_error": None,
     "source_signature": None,
     "uploader_generation": 0,
-    "phase": 4,
+    "phase": 5.1,
 }
 
 

@@ -1,6 +1,6 @@
 # Demo Script
 
-Target duration for the Phase 5.0 dashboard and developer handoff: 2–3 minutes.
+Target duration for the Phase 5.1 dashboard and executive-insight handoff: 2–3 minutes.
 
 1. Load the fully synthetic 10,000-review fintech sample dataset.
 2. Validate and clean it.
@@ -22,9 +22,14 @@ Target duration for the Phase 5.0 dashboard and developer handoff: 2–3 minutes
 12. Select one request group, open its exact synthetic source reviews, note the
     intentionally improved sentiment after 3.4.0, and export the selected
     findings.
-13. In a developer view or terminal, build the validated `InsightContext`, show
-    compact payload metadata and several grounded review IDs, and emphasize
-    that no model invocation occurs in Phase 5.0.
+13. Open **Executive Insights** and review the compact context counts.
+14. Click **Generate executive insights** and explain the strict structured
+    response.
+15. Open a problem, inspect cited review IDs, and verify exact quotes in the
+    Evidence Explorer.
+16. Show evidence-validation status and limitations, then download Markdown.
+17. Explain that without a key the context still renders, generation is
+    disabled, and all deterministic dashboards remain available.
 
 End with:
 
@@ -32,5 +37,4 @@ End with:
 > decisions while keeping humans in control.
 
 All findings in this demo come from deterministic synthetic records, not real
-customers. Do not imply that AI recommendations or experiments are available
-in Phase 5.0.
+customers. Do not imply that experiments, chat, or persistence are available.

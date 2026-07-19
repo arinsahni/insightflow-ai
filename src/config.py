@@ -30,6 +30,8 @@ class AppSettings(BaseModel):
     gemini_model: str = DEFAULT_GEMINI_MODEL
     enable_ai: bool = True
     max_ai_quotes_per_theme: int = Field(default=5, ge=1, le=20)
+    gemini_timeout_seconds: int = Field(default=45, ge=5, le=180)
+    gemini_max_retries: int = Field(default=2, ge=0, le=5)
     max_upload_rows: int = Field(default=50_000, ge=1)
 
     @property
@@ -49,5 +51,7 @@ def get_settings() -> AppSettings:
         gemini_model=model,
         enable_ai=_parse_bool(os.getenv("ENABLE_AI"), default=True),
         max_ai_quotes_per_theme=int(os.getenv("MAX_AI_QUOTES_PER_THEME", "5")),
+        gemini_timeout_seconds=int(os.getenv("GEMINI_TIMEOUT_SECONDS", "45")),
+        gemini_max_retries=int(os.getenv("GEMINI_MAX_RETRIES", "2")),
         max_upload_rows=int(os.getenv("MAX_UPLOAD_ROWS", "50000")),
     )

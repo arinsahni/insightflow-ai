@@ -7,8 +7,8 @@ managers and analysts. It is designed to turn customer feedback into recurring
 pain points, measurable priorities, grounded recommendations, and experiment
 ideas while keeping product teams in control.
 
-> Phase 4.7 status: feature requests now use an expanded, deterministic
-> product-opportunity taxonomy while remaining fully local and source-grounded.
+> Phase 5.1 status: optional Gemini executive insights are available through an
+> explicit, evidence-validated generation workflow.
 
 ## Problem statement
 
@@ -331,6 +331,38 @@ Quotes remain exact source text with source review IDs. Release stories are
 thresholded comparisons of observed version metrics and deliberately avoid
 technical root-cause claims.
 
+## Gemini Executive Insights
+
+The Executive Insights page connects the compact deterministic Phase 5.0
+context to the current official `google-genai` SDK. Gemini is optional: no
+client is created and no request is made during import, page load, filtering,
+cleaning, or local analysis. A request occurs only after the user selects
+**Generate executive insights**.
+
+Generation uses `gemini-2.5-flash` by default, conservative settings, JSON
+response MIME type, and a strict Pydantic response schema. No tools, search,
+code execution, function calling, chat memory, embeddings, or vector database
+are enabled. Before a report is marked validated, cited review IDs and exact
+quotes are grounded, measured numbers are checked, unsupported causal or
+business-impact claims are rejected, and limitations are required.
+
+Validated reports persist across navigation, are marked stale when filters
+change the context fingerprint, and download as Markdown or JSON.
+
+```bash
+cp .env.example .env
+# Add GEMINI_API_KEY=your_key_here
+# GEMINI_MODEL=gemini-2.5-flash
+streamlit run app.py
+```
+
+Never commit `.env`; restart Streamlit after changing it. Pytest uses mocked
+clients and needs no real key or network. Optional one-call verification:
+
+```bash
+python scripts/smoke_test_gemini.py
+```
+
 ### Severity
 
 ```text
@@ -393,8 +425,8 @@ one review, and insufficient trend data. See
 
 ## Future improvements
 
-The next phase objective is the optional evidence-constrained AI layer. DuckDB
-and evaluation remain later.
+The next phase objective is the remaining bounded AI product workflows. DuckDB,
+chat-style querying, experiments, and evaluation remain later.
 Potential post-MVP work includes multilingual models, scheduled ingestion,
 integrations, and user authentication.
 
@@ -409,8 +441,10 @@ integrations, and user authentication.
 - Trends are neutral when usable date coverage is under 14 days.
 - Scores depend on documented heuristic weights that require product-team
   calibration.
-- No Gemini, recommendations, experiments, DuckDB persistence, or advanced
-  exports are implemented.
+- Gemini requires a user-provided key and external service availability.
+- Reports that fail evidence validation are never presented as validated.
+- No Ask Your Feedback, experiments, DuckDB persistence, or authentication is
+  implemented.
 
 ## Resume bullet
 
