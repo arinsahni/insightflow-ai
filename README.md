@@ -7,9 +7,9 @@ managers and analysts. It is designed to turn customer feedback into recurring
 pain points, measurable priorities, grounded recommendations, and experiment
 ideas while keeping product teams in control.
 
-> Phase 3 status: the complete local analysis pipeline is available, including
-> hybrid sentiment, taxonomy classification, feature requests, trends,
-> explainable severity and priority, business risk, and grounded quotes.
+> Phase 4.6 status: the bundled demonstration data now contains 10,000 primary
+> synthetic fintech reviews plus controlled quality issues. Generation is
+> deterministic, local, and safe for a public portfolio.
 
 ## Problem statement
 
@@ -38,15 +38,43 @@ metrics.
 - Explicit feature-request detection and grouping
 - Pain-point and feature-request prioritization
 - Source-linked representative quotes
-- Product analytics dashboards and filters
+- Interactive product analytics dashboard and global filters
 - Optional Gemini-supported recommendations with deterministic fallback
 - Experiment proposals, evaluation, and exports
 
-Phase 3 provides deterministic core analytics without external calls.
+Phase 4.5 polishes the deterministic dashboard without changing analytics.
+
+## Dashboard
+
+After analysis, global sidebar filters cover date, platform, rating, geography,
+device, app version, theme, sentiment, and user segment when those fields are
+available. Filters update KPI cards, charts, tables, drill-downs, quotes, and
+exports without rerunning sentiment or classification.
+
+The Overview includes feedback volume, negative sentiment trend, sentiment and
+rating distributions, ranked themes, and an issue-priority matrix. Pain Points
+adds deterministic explanations, time trends, five segment breakdowns, grounded
+quotes, matching feedback, and selected-theme export. Feature Requests adds
+group ranking, request trends, platform/user-segment views, source evidence, and
+filtered or selected-group exports.
+
+Empty datasets, missing dates/ratings/segments, one sentiment class, and
+zero-result filters render explicit safe states instead of broken charts.
+
+Executive KPI cards pair each value with denominator or interpretation context.
+The chart inventory includes feedback volume, weekly negative feedback rate,
+sentiment and discrete rating distributions, ranked product themes, the issue
+priority matrix, theme/request trends, and segment views. Reader tables use
+human-friendly labels and rounded values; full analytical fields remain in
+downloads and the optional technical view.
+
+Weekly negative feedback is negative reviews divided by all reviews in each
+calendar week. Semantic colors remain fixed across views, and text labels plus
+descriptive hover details ensure color is not the only signal.
 
 ## Screenshots
 
-Screenshots will be added after the dashboard phase is implemented.
+Screenshots: _Overview, Pain Points, and Feature Requests images to be added._
 
 ## Architecture
 
@@ -129,9 +157,42 @@ The preferred CSV columns are:
 | `device` | Device model or family |
 | `user_segment` | Customer segment |
 
-`data/sample_reviews.csv` contains fictional food-delivery reviews for local
-demonstration. It includes deliberate duplicates and missing optional values so
-later validation behavior can be exercised.
+`data/sample_reviews.csv` contains fictional consumer-fintech reviews for local
+demonstration. It includes deliberate duplicates and malformed optional values
+so validation and cleaning behavior can be exercised.
+
+## Realistic Synthetic Dataset
+
+The bundled CSV contains 10,000 primary reviews dated from July 2025 through
+June 2026, followed by 150 intentional exact duplicates. It covers Android,
+iOS, and Web; ten date-aligned app versions; six countries; five user segments;
+and Free, Premium, and Business subscription tiers.
+
+The probabilistic generation model includes an Android 3.2.1 crash regression
+and 3.2.2 recovery, a temporary 3.3.0 payment incident, increasing final-quarter
+fee complaints, growing budgeting/export requests, and improved sentiment after
+3.4.0. Reviews use varied lengths, mostly English with light Hinglish and
+controlled typographical noise. Feature requests, mixed reviews, platform and
+segment differences, seasonality, and release spikes are encoded in the review
+records—not in precomputed analytics fields.
+
+Controlled quality issues are intentional: exact duplicates, blank feedback,
+malformed dates and ratings, missing optional values, inconsistent platform
+casing, and surrounding whitespace let the validation workflow demonstrate
+real remediation. Every record is synthetic; there is no real customer
+information, contact data, or externally downloaded content.
+
+Regenerate the exact public sample with:
+
+```bash
+python scripts/generate_sample_data.py \
+  --rows 10000 \
+  --seed 42 \
+  --output data/sample_reviews.csv
+```
+
+The same seed produces the same CSV. The generator uses no network calls or API
+keys.
 
 ## Load and prepare feedback
 
@@ -242,9 +303,8 @@ one review, and insufficient trend data. See
 
 ## Future improvements
 
-The next phase builds the polished dashboard: filters, Plotly charts, richer
-segment exploration, and responsive visual states. Optional AI support,
-evaluation, and broader exports follow in their own phases.
+The next phase objective is the optional evidence-constrained AI layer. DuckDB
+and evaluation remain later.
 Potential post-MVP work includes multilingual models, scheduled ingestion,
 integrations, and user authentication.
 

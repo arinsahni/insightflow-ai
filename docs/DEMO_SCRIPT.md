@@ -1,24 +1,29 @@
 # Demo Script
 
-Target duration after the full MVP is implemented: 2–3 minutes.
+Target duration for the Phase 4.6 dashboard: 2–3 minutes.
 
-1. Introduce the manual customer-feedback problem.
-2. Load the fictional sample dataset.
-3. Show validation and cleaning results.
-4. Review overview metrics.
-5. Open the leading pain points.
-6. Inspect one pain point and its source quotes.
-7. Show affected customer segments.
-8. Generate and review a grounded recommendation.
-9. Generate an A/B experiment proposal.
-10. Ask one natural-language product question.
-11. Show measured evaluation results and guardrails.
-12. Explain that time savings are a target hypothesis until user-tested.
+1. Load the fully synthetic 10,000-review fintech sample dataset.
+2. Validate and clean it.
+3. Select **Analyze feedback**.
+4. Explain the six executive KPI cards and their supporting context.
+5. Show **Weekly Negative Feedback Rate** and its weekly denominator.
+6. Show **Most Reported Product Themes**.
+7. Explain frequency, severity, and priority in the matrix.
+8. Filter Platform to Android and explain the synthetic 3.2.1 crash regression
+   and 3.2.2 recovery.
+9. Open App Performance in Pain Points and show exact grounded quotes and
+   affected versions.
+10. Briefly contrast the synthetic 3.3.0 payment incident with its 3.3.1
+    recovery, then point out growing final-quarter fee complaints.
+11. Open Feature Requests and show the increasing budgeting/export demand.
+12. Note the intentionally improved sentiment after 3.4.0, then export the
+    filtered findings.
 
 End with:
 
 > InsightFlow AI transforms raw customer feedback into evidence-backed product
 > decisions while keeping humans in control.
 
-In Phase 1, demonstrate only the branded shell and seven working navigation
-destinations. Do not imply that later capabilities are already available.
+All findings in this demo come from deterministic synthetic records, not real
+customers. Do not imply that AI recommendations or experiments are available
+in Phase 4.6.
