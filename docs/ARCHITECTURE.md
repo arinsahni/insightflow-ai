@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 3
+## Phase 4
 
 The application is a Python 3.11 Streamlit multipage app:
 
@@ -20,6 +20,8 @@ src/prioritization.py  Explainable severity and priority components
 src/metrics.py         Overall, theme, and request aggregates
 src/quotes.py          Deterministic grounded quote selection
 src/analysis_pipeline.py Phase 3 orchestration and processing report
+src/filters.py          Global filter options, application, and summaries
+src/visualizations.py   Safe reusable Plotly figure factories
 src/session.py         Data workflow session state and reset behavior
 src/ui.py              Shared visual components and sidebar orchestration
 data/                  Fictional source data and ignored processed outputs
@@ -97,6 +99,18 @@ from defaulting to low priority.
 
 Session state additionally stores analyzed reviews, overall metrics, theme and
 feature summaries, trend outputs, grounded quote indexes, warnings, and runtime.
+
+## Dashboard data flow
+
+The analyzed DataFrame remains immutable. Sidebar controls write
+`active_filters`; `apply_filters` creates `filtered_reviews`, and existing
+metric/trend aggregators create `filtered_theme_summary` without rerunning the
+analysis pipeline. Pages consume only these filtered outputs.
+
+Plotly factories accept prepared summaries or review DataFrames and return a
+styled figure even for empty or incomplete input. Pages own layout, selection,
+and UTF-8 CSV downloads. Reset Filters rotates filter widget keys and preserves
+all loaded, cleaned, and analyzed data.
 
 ## Planned boundaries
 

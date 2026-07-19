@@ -68,3 +68,10 @@ Theme summaries include frequency, share, rating, negative percentage,
 sentiment, confidence, trend, issue velocity, risk, severity and priority
 scores, component values, labels, and explanations. Derived scores are
 prioritization aids rather than objective facts.
+
+## Dashboard state
+
+`active_filters` stores optional date and multi-select values.
+`filtered_reviews` is a copy of analyzed rows matching those selections.
+`filtered_theme_summary` recalculates aggregate metrics over that filtered
+population. These are session-only views and add no persisted dataset fields.

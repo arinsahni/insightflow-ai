@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 from dataclasses import asdict
 from hashlib import sha256
+from html import escape
 import logging
 
 import streamlit as st
@@ -18,7 +19,10 @@ from src.data_loader import (
     suggest_column_mapping,
 )
 from src.data_validator import ValidationResult, validate_dataframe
+from src.filters import apply_filters, build_filter_options, default_filters, summarize_active_filters
+from src.metrics import calculate_theme_summary
 from src.session import initialize_session_state, reset_data_state
+from src.trends import calculate_trends
 
 
 LOGGER = logging.getLogger(__name__)
@@ -59,6 +63,9 @@ def _clear_analysis_state() -> None:
     st.session_state["analytics_warnings"] = []
     st.session_state["analytics_processing_time"] = None
     st.session_state["analysis_complete"] = False
+    st.session_state["filtered_reviews"] = None
+    st.session_state["filtered_theme_summary"] = None
+    st.session_state["active_filters"] = default_filters()
 
 
 def _upload_signature(filename: str, content: bytes) -> str:
@@ -77,6 +84,27 @@ def configure_page(*, page_title: str) -> None:
         page_icon="💬",
         layout="wide",
         initial_sidebar_state="expanded",
+    )
+    st.markdown(
+        """<style>
+        .block-container{padding-top:1.5rem;padding-bottom:2rem;max-width:1500px}
+        [data-testid="stVerticalBlock"]{gap:.75rem}
+        .if-kpi{height:100%;min-height:132px;padding:1rem 1.05rem;border:1px solid
+        color-mix(in srgb,currentColor 16%,transparent);border-radius:12px;
+        background:color-mix(in srgb,currentColor 3%,transparent);display:flex;
+        flex-direction:column;justify-content:space-between}
+        .if-kpi-label{font-size:.82rem;font-weight:650;letter-spacing:.02em;opacity:.72}
+        .if-kpi-value{font-size:clamp(1.25rem,2vw,2rem);line-height:1.15;font-weight:720;
+        overflow-wrap:anywhere;margin:.45rem 0}
+        .if-kpi-support{font-size:.82rem;line-height:1.35;opacity:.7}
+        .if-quote{border:1px solid color-mix(in srgb,currentColor 16%,transparent);
+        border-left:3px solid #64748b;border-radius:10px;padding:.9rem 1rem;margin:.5rem 0;
+        background:color-mix(in srgb,currentColor 3%,transparent)}
+        .if-quote-text{font-size:.98rem;line-height:1.55}.if-quote-meta{font-size:.78rem;
+        opacity:.68;margin-top:.55rem}
+        @media(max-width:800px){.if-kpi{min-height:112px}.block-container{padding-top:1rem}}
+        </style>""",
+        unsafe_allow_html=True,
     )
 
 
@@ -199,6 +227,33 @@ def render_cleaning_report(report: CleaningReport) -> None:
     st.caption(f"Cleaning completed in {report.processing_time_seconds:.3f} seconds.")
 
 
+def render_kpi_cards(items: list[tuple[str, str, str | None]]) -> None:
+    """Render equal-height responsive KPI cards."""
+    columns = st.columns(3)
+    for index, (label, value, caption) in enumerate(items):
+        with columns[index % 3]:
+            st.markdown(
+                f'<div class="if-kpi"><div class="if-kpi-label">{escape(label)}</div>'
+                f'<div class="if-kpi-value">{escape(value or "Not available")}</div>'
+                f'<div class="if-kpi-support">{escape(caption or "")}</div></div>',
+                unsafe_allow_html=True,
+            )
+
+
+def render_empty_state(title: str, guidance: str) -> None:
+    """Render a consistent professional empty state."""
+    st.info(f"**{title}**\n\n{guidance}")
+
+
+def render_quote_card(quote: str, metadata: str) -> None:
+    """Render an exact source quote in a subtle accessible card."""
+    st.markdown(
+        f'<div class="if-quote"><div class="if-quote-text">“{escape(quote)}”</div>'
+        f'<div class="if-quote-meta">{escape(metadata)}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
 def _run_validation(mapping: dict[str, str | None]) -> ValidationResult:
     """Validate current session data and store the structured result."""
     settings = get_settings()
@@ -233,8 +288,14 @@ def _run_cleaning(mapping: dict[str, str | None]) -> None:
 def _run_analysis() -> None:
     """Run and store deterministic local analytics with safe error handling."""
     try:
-        with st.spinner("Analyzing sentiment, themes, requests, trends, and priorities…"):
+        with st.status("Preparing dashboard analysis", expanded=True) as status:
+            st.write("Preparing reviews")
+            st.write("Calculating sentiment and classifying themes")
+            st.write("Detecting feature requests")
+            st.write("Calculating product metrics and ranking pain points")
             result = _cached_analysis(st.session_state["cleaned_reviews"])
+            st.write("Preparing dashboard")
+            status.update(label="Dashboard analysis ready", state="complete", expanded=False)
     except (KeyError, TypeError, ValueError) as error:
         LOGGER.error("Local analysis failed with %s", type(error).__name__)
         st.session_state["processing_error"] = (
@@ -250,7 +311,42 @@ def _run_analysis() -> None:
     st.session_state["analytics_warnings"] = result.warnings
     st.session_state["analytics_processing_time"] = result.report.processing_time_seconds
     st.session_state["analysis_complete"] = True
+    st.session_state["active_filters"] = default_filters()
+    st.session_state["filtered_reviews"] = result.analyzed_reviews.copy()
+    st.session_state["filtered_theme_summary"] = result.theme_summary.copy()
     st.session_state["processing_error"] = None
+
+
+def _render_global_filters() -> None:
+    """Render global filters and update derived filtered views."""
+    analyzed = st.session_state["analyzed_reviews"]
+    options = build_filter_options(analyzed)
+    current = st.session_state.get("active_filters") or default_filters()
+    generation = st.session_state.get("filter_generation", 0)
+    filters = default_filters()
+    st.divider()
+    st.markdown("### Global filters")
+    if "date_range" in options:
+        selected_dates = st.date_input(
+            "Date range", value=current.get("date_range") or options["date_range"],
+            min_value=options["date_range"][0], max_value=options["date_range"][1],
+            key=f"global_date_{generation}",
+        )
+        filters["date_range"] = selected_dates if isinstance(selected_dates, tuple) and len(selected_dates) == 2 else None
+    labels = {"platform": "Platform", "rating": "Rating", "country": "Country", "device": "Device", "app_version": "App version", "primary_theme": "Theme", "sentiment": "Sentiment", "user_segment": "User segment"}
+    for key, label in labels.items():
+        if key in options:
+            filters[key] = st.multiselect(label, options[key], default=current.get(key, []), key=f"global_{key}_{generation}")
+    st.session_state["active_filters"] = filters
+    filtered = apply_filters(analyzed, filters)
+    st.session_state["filtered_reviews"] = filtered
+    st.session_state["filtered_theme_summary"] = calculate_theme_summary(filtered, calculate_trends(filtered))
+    st.caption(f"{len(filtered):,} of {len(analyzed):,} analyzed rows")
+    st.caption(summarize_active_filters(filters))
+    if st.button("Reset filters", width="stretch"):
+        st.session_state["active_filters"] = default_filters()
+        st.session_state["filter_generation"] = generation + 1
+        st.rerun()
 
 
 def render_sidebar() -> None:
@@ -337,6 +433,7 @@ def render_sidebar() -> None:
                     st.caption(
                         f"Analyzed in {st.session_state['analytics_processing_time']:.3f} seconds."
                     )
+                    _render_global_filters()
 
         if st.session_state.get("processing_error"):
             st.error(st.session_state["processing_error"])

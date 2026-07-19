@@ -7,7 +7,7 @@ from src.ui import configure_page, render_app_header, render_phase_notice, rende
 
 
 def main() -> None:
-    """Render the Phase 3 landing page."""
+    """Render the Phase 4 landing page."""
     configure_page(page_title="InsightFlow AI")
     initialize_session_state()
     render_sidebar()
@@ -23,7 +23,7 @@ def main() -> None:
     if st.session_state["analysis_complete"]:
         render_phase_notice(
             "Analysis ready",
-            "Open Overview, Pain Points, or Feature Requests to inspect measured results and source quotes.",
+            "Use global filters, then explore Overview, Pain Points, or Feature Requests.",
         )
     elif st.session_state["data_processed"]:
         render_phase_notice(

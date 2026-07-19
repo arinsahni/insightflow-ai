@@ -20,13 +20,19 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "representative_quotes": {},
     "analytics_warnings": [],
     "analytics_processing_time": None,
+    "filtered_reviews": None,
+    "active_filters": {},
+    "filtered_theme_summary": None,
+    "selected_pain_point": None,
+    "selected_feature_request_group": None,
+    "filter_generation": 0,
     "data_loaded": False,
     "data_processed": False,
     "analysis_complete": False,
     "processing_error": None,
     "source_signature": None,
     "uploader_generation": 0,
-    "phase": 3,
+    "phase": 4,
 }
 
 
