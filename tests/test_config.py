@@ -1,5 +1,6 @@
-"""Tests for Phase 1 environment-backed configuration."""
+"""Tests for environment and Streamlit-backed configuration."""
 
+from src import config
 from src.config import DEFAULT_GEMINI_MODEL, get_settings
 
 
@@ -43,6 +44,24 @@ def test_api_availability_requires_enable_flag_and_key(monkeypatch) -> None:
     get_settings.cache_clear()
 
     assert get_settings().ai_available is True
+
+
+def test_streamlit_secrets_are_used_when_environment_is_absent(monkeypatch) -> None:
+    """Community Cloud secrets should configure optional AI safely."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    monkeypatch.setattr(
+        config,
+        "_streamlit_secrets",
+        lambda: {"GEMINI_API_KEY": "streamlit-test-value", "GEMINI_MODEL": "cloud-model"},
+    )
+    get_settings.cache_clear()
+
+    settings = get_settings()
+
+    assert settings.gemini_api_key == "streamlit-test-value"
+    assert settings.gemini_model == "cloud-model"
+    assert settings.ai_available is True
 
 
 def teardown_module() -> None:

@@ -83,7 +83,7 @@ model = get_gemini_model(secrets=secrets)
 if not api_key:
     st.info(
         "**Gemini is not configured.** Add `GEMINI_API_KEY` to `.env` for local "
-        "use or `.streamlit/secrets.toml` for a future deployment, then restart Streamlit."
+        "use or to Streamlit Community Cloud secrets, then restart the app."
     )
 
 stored_report = st.session_state.get("executive_report")

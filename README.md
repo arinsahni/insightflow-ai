@@ -86,7 +86,7 @@ without moving business logic into page files. See
 
 ## Tech stack
 
-Python 3.11, Streamlit, Pandas, NumPy, Plotly, DuckDB, scikit-learn,
+Python 3.11, Streamlit, Pandas, NumPy, Plotly, scikit-learn,
 python-dotenv, Pydantic, the official Google Gen AI SDK, VADER Sentiment, and
 pytest. The project is CPU-only and does not require Docker, Node.js, or CUDA.
 
@@ -125,6 +125,56 @@ without one.
 | `MAX_UPLOAD_ROWS` | Upload row safety limit | `50000` |
 
 Never commit `.env` or place credentials in source code.
+
+## Deploy to Streamlit Community Cloud
+
+The deployment entrypoint is `app.py`. Uploaded and processed feedback stays in
+the active Streamlit session; the application does not rely on repository
+writes or local persistence. The bundled sample is resolved relative to the
+repository root, so it works independently of the process working directory.
+
+Push the reviewed project to GitHub:
+
+```bash
+git status
+git add app.py src pages tests requirements.txt README.md .gitignore
+git diff --cached
+git commit -m "Prepare Streamlit Community Cloud deployment"
+git push origin HEAD
+```
+
+Then:
+
+1. Sign in to [Streamlit Community Cloud](https://share.streamlit.io/).
+2. Select **Create app**, choose the GitHub repository and branch, and set the
+   main file path to `app.py`.
+3. Open **Advanced settings** and select Python 3.11.
+4. Deploy. Gemini is optional; the deterministic local workflow works with no
+   secrets configured.
+
+To enable optional Gemini generation, add the following top-level entry in the
+app's Community Cloud **Secrets** settings. Do not commit a local
+`.streamlit/secrets.toml`:
+
+```toml
+GEMINI_API_KEY = "your value"
+```
+
+Optional settings such as `GEMINI_MODEL`, `ENABLE_AI`, and `MAX_UPLOAD_ROWS`
+may also be added as top-level secrets. Local environment variables take
+precedence over Streamlit secrets when both exist.
+
+Deployment troubleshooting:
+
+- If dependency installation fails, confirm Python 3.11 is selected and
+  redeploy after checking `requirements.txt`.
+- If the app file is not found, confirm the main file path is exactly `app.py`
+  (Linux paths and filenames are case-sensitive).
+- If the sample cannot load, confirm `data/sample_reviews.csv` is committed.
+- If Gemini is unavailable, check the secret name—not its value—and reboot the
+  app. All deterministic analysis remains available without Gemini.
+- Review Community Cloud logs for package or import names, but never print
+  secrets or uploaded feedback into logs.
 
 ## Run
 

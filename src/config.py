@@ -11,12 +11,37 @@ from pydantic import BaseModel, ConfigDict, Field
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
+# Load local development values once. Streamlit Community Cloud does not use
+# this file; its secrets are resolved separately below. Loading once also keeps
+# tests and runtime overrides deterministic.
+load_dotenv(PROJECT_ROOT / ".env", override=False)
+
 
 def _parse_bool(value: str | None, *, default: bool) -> bool:
     """Parse a conventional environment boolean with a safe default."""
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _streamlit_secrets() -> dict[str, object]:
+    """Return configured Streamlit secrets without requiring a secrets file."""
+    try:
+        import streamlit as st
+
+        return st.secrets.to_dict()
+    except Exception:
+        # Streamlit raises when no secrets file or runtime context is present.
+        return {}
+
+
+def _setting_value(name: str, secrets: dict[str, object]) -> str | None:
+    """Resolve an environment variable first, then a top-level Streamlit secret."""
+    environment_value = os.getenv(name)
+    if environment_value is not None:
+        return environment_value.strip()
+    secret_value = secrets.get(name)
+    return str(secret_value).strip() if secret_value is not None else None
 
 
 class AppSettings(BaseModel):
@@ -42,16 +67,22 @@ class AppSettings(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_settings() -> AppSettings:
-    """Load and validate application settings without requiring an API key."""
-    load_dotenv(PROJECT_ROOT / ".env")
-    api_key = os.getenv("GEMINI_API_KEY", "").strip() or None
-    model = os.getenv("GEMINI_MODEL", "").strip() or DEFAULT_GEMINI_MODEL
+    """Load environment or Streamlit settings without requiring an API key."""
+    secrets = _streamlit_secrets()
+    api_key = _setting_value("GEMINI_API_KEY", secrets) or None
+    model = _setting_value("GEMINI_MODEL", secrets) or DEFAULT_GEMINI_MODEL
     return AppSettings(
         gemini_api_key=api_key,
         gemini_model=model,
-        enable_ai=_parse_bool(os.getenv("ENABLE_AI"), default=True),
-        max_ai_quotes_per_theme=int(os.getenv("MAX_AI_QUOTES_PER_THEME", "5")),
-        gemini_timeout_seconds=int(os.getenv("GEMINI_TIMEOUT_SECONDS", "45")),
-        gemini_max_retries=int(os.getenv("GEMINI_MAX_RETRIES", "2")),
-        max_upload_rows=int(os.getenv("MAX_UPLOAD_ROWS", "50000")),
+        enable_ai=_parse_bool(_setting_value("ENABLE_AI", secrets), default=True),
+        max_ai_quotes_per_theme=int(
+            _setting_value("MAX_AI_QUOTES_PER_THEME", secrets) or "5"
+        ),
+        gemini_timeout_seconds=int(
+            _setting_value("GEMINI_TIMEOUT_SECONDS", secrets) or "45"
+        ),
+        gemini_max_retries=int(
+            _setting_value("GEMINI_MAX_RETRIES", secrets) or "2"
+        ),
+        max_upload_rows=int(_setting_value("MAX_UPLOAD_ROWS", secrets) or "50000"),
     )
