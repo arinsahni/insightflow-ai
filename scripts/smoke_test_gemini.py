@@ -61,6 +61,11 @@ def main() -> int:
         f"risks={len(report.response.release_risks)}; "
         f"actions={len(report.response.recommended_actions)}"
     )
+    if not report.validation_passed:
+        for error in report.validation_errors:
+            print(f"Validation error: {error}")
+        for warning in report.validation_warnings:
+            print(f"Validation warning: {warning}")
     return 0 if report.validation_passed else 1
 
 

@@ -11,8 +11,11 @@ from typing import Any
 import pandas as pd
 
 from src.ai_models import InsightContext, PromptPayloadMetadata
-from src.ai_prompts import build_executive_summary_prompt
-from src.ai_response_models import ExecutiveReport
+from src.ai_prompts import (
+    build_executive_correction_prompt,
+    build_executive_summary_prompt,
+)
+from src.ai_response_models import ExecutiveReport, GeminiUsageMetadata
 from src.ai_response_validator import validate_executive_response
 from src.gemini_client import GeminiExecutiveClient
 from src.insight_context import build_insight_context, compact_insight_context
@@ -71,7 +74,7 @@ def generate_executive_report(
     cleaning_report: dict[str, Any] | object | None = None,
     max_context_characters: int = 24_000,
 ) -> ExecutiveReport:
-    """Generate exactly once, validate evidence, and retain the full audit result."""
+    """Generate, validate, and make at most one evidence-correction request."""
     prepared = prepare_executive_report_request(
         analyzed_df,
         raw_review_count=raw_review_count,
@@ -80,6 +83,17 @@ def generate_executive_report(
     )
     response, usage = client.generate_executive_insights(prepared.prompt)
     validation = validate_executive_response(response, prepared.context_payload)
+    if not validation.valid:
+        correction_prompt = build_executive_correction_prompt(
+            prepared.context_payload,
+            response.model_dump(mode="json"),
+            validation.errors,
+        )
+        response, correction_usage = client.generate_executive_insights(
+            correction_prompt
+        )
+        usage = _combine_usage(usage, correction_usage)
+        validation = validate_executive_response(response, prepared.context_payload)
     return ExecutiveReport(
         response=response,
         model=client.model,
@@ -90,6 +104,36 @@ def generate_executive_report(
         validation_errors=validation.errors,
         validation_warnings=validation.warnings,
         validated_review_ids=validation.validated_review_ids,
+    )
+
+
+def _sum_optional(first: int | None, second: int | None) -> int | None:
+    if first is None and second is None:
+        return None
+    return (first or 0) + (second or 0)
+
+
+def _combine_usage(
+    first: GeminiUsageMetadata,
+    second: GeminiUsageMetadata,
+) -> GeminiUsageMetadata:
+    """Combine two bounded generation attempts for honest usage reporting."""
+    return GeminiUsageMetadata(
+        prompt_token_count=_sum_optional(
+            first.prompt_token_count, second.prompt_token_count
+        ),
+        output_token_count=_sum_optional(
+            first.output_token_count, second.output_token_count
+        ),
+        total_token_count=_sum_optional(
+            first.total_token_count, second.total_token_count
+        ),
+        cached_token_count=_sum_optional(
+            first.cached_token_count, second.cached_token_count
+        ),
+        retry_count=first.retry_count + second.retry_count,
+        latency_seconds=first.latency_seconds + second.latency_seconds,
+        finish_reason=second.finish_reason,
     )
 
 

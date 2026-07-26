@@ -6,7 +6,8 @@ import pytest
 
 from src.gemini_client import (
     GeminiAuthenticationError, GeminiConfigurationError, GeminiExecutiveClient,
-    GeminiRateLimitError, GeminiResponseError, GeminiTimeoutError,
+    GeminiRateLimitError, GeminiRequestError, GeminiResponseError,
+    GeminiTimeoutError, executive_response_transport_schema,
 )
 from tests.test_ai_response_models import valid_response
 
@@ -61,9 +62,23 @@ def test_success_uses_model_schema_timeout_and_usage() -> None:
     result, usage = client.generate_executive_insights("prompt")
     assert result.executive_summary
     assert models.calls[0]["model"] == "test-model"
-    assert models.calls[0]["config"].response_schema is not None
+    config = models.calls[0]["config"]
+    assert config.response_schema is None
+    assert config.response_json_schema is not None
+    assert config.thinking_config.thinking_budget == 0
     assert factory_calls[0]["http_options"].timeout == 12_000
     assert usage.total_token_count == 150 and usage.retry_count == 0
+
+
+def test_transport_schema_keeps_shape_without_unsupported_constraints() -> None:
+    """The API schema stays simple while local Pydantic remains strict."""
+    schema = executive_response_transport_schema()
+    serialized = str(schema)
+    assert "executive_summary" in schema["properties"]
+    assert "additionalProperties" not in serialized
+    assert "minLength" not in serialized
+    assert "maxItems" not in serialized
+    assert "$defs" in schema
 
 
 def test_missing_usage_is_safe_and_json_text_parses() -> None:
@@ -107,8 +122,49 @@ def test_transient_retry_count_and_delays() -> None:
 def test_malformed_response_raises_safe_error() -> None:
     models = FakeModels([_response(text="{bad json")])
     client = GeminiExecutiveClient(
-        api_key="x", client_factory=lambda **_: SimpleNamespace(models=models)
+        api_key="x", max_retries=0,
+        client_factory=lambda **_: SimpleNamespace(models=models)
     )
     with pytest.raises(GeminiResponseError):
         client.generate_executive_insights("prompt")
 
+
+def test_invalid_response_retries_and_then_succeeds() -> None:
+    models = FakeModels([
+        _response(text="{bad json"),
+        _response(parsed=valid_response()),
+    ])
+    delays = []
+    client = GeminiExecutiveClient(
+        api_key="x", max_retries=1, sleep_fn=delays.append,
+        client_factory=lambda **_: SimpleNamespace(models=models),
+    )
+    result, usage = client.generate_executive_insights("prompt")
+    assert result.executive_summary
+    assert usage.retry_count == 1
+    assert delays == [1.0]
+
+
+def test_max_token_response_raises_specific_safe_error() -> None:
+    response = _response(text='{"executive_summary":"cut')
+    response.candidates[0].finish_reason = "MAX_TOKENS"
+    client = GeminiExecutiveClient(
+        api_key="x", max_retries=0, client_factory=lambda **_: SimpleNamespace(
+            models=FakeModels([response])
+        )
+    )
+    with pytest.raises(GeminiResponseError, match="output limit"):
+        client.generate_executive_insights("prompt")
+
+
+def test_invalid_argument_preserves_safe_root_cause() -> None:
+    error = ApiError(400, 'additional_properties rejected; key=do-not-copy')
+    client = GeminiExecutiveClient(
+        api_key="do-not-copy", max_retries=2,
+        client_factory=lambda **_: SimpleNamespace(models=FakeModels([error])),
+    )
+    with pytest.raises(GeminiRequestError) as raised:
+        client.generate_executive_insights("prompt")
+    assert "structured-output schema" in str(raised.value)
+    assert "do-not-copy" not in str(raised.value)
+    assert raised.value.__cause__ is error

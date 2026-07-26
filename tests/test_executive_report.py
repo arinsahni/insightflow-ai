@@ -28,6 +28,17 @@ class FakeClient:
         return self.response, GeminiUsageMetadata(total_token_count=321)
 
 
+class SequenceClient(FakeClient):
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = 0
+
+    def generate_executive_insights(self, prompt):
+        self.calls += 1
+        assert "BEGIN UNTRUSTED EVIDENCE JSON" in prompt
+        return self.responses.pop(0), GeminiUsageMetadata(total_token_count=100)
+
+
 def _small_analyzed() -> pd.DataFrame:
     cleaned = pd.DataFrame({
         "review_id": ["R1", "R2", "R3"],
@@ -85,6 +96,29 @@ def test_failed_validation_is_represented_safely() -> None:
     assert report.validation_errors
 
 
+def test_one_correction_retry_can_recover_grounding_validation() -> None:
+    analyzed = _small_analyzed()
+    prepared = prepare_executive_report_request(analyzed)
+    quote = prepared.context_payload["representative_quotes"][0]
+    corrected = valid_response()
+    corrected.evidence[0].review_id = quote["review_id"]
+    corrected.evidence[0].quote = quote["review_text"]
+    corrected.customer_problems[0].supporting_review_ids = [quote["review_id"]]
+    corrected.product_opportunities[0].supporting_review_ids = [quote["review_id"]]
+    corrected.recommended_actions[0].supporting_review_ids = [quote["review_id"]]
+    invalid = corrected.model_copy(deep=True)
+    invalid.recommended_actions[0].rationale = (
+        "This will improve conversion and retention."
+    )
+    client = SequenceClient([invalid, corrected])
+
+    report = generate_executive_report(analyzed, client=client)
+
+    assert client.calls == 2
+    assert report.validation_passed
+    assert report.usage.total_token_count == 200
+
+
 def test_full_sample_preparation_is_bounded() -> None:
     raw = load_sample_data(max_rows=50_000).dataframe
     cleaned = clean_feedback_data(raw, suggest_column_mapping(raw.columns))
@@ -92,4 +126,3 @@ def test_full_sample_preparation_is_bounded() -> None:
     prepared = prepare_executive_report_request(analyzed)
     assert len(analyzed) == 9_985
     assert prepared.metadata.character_count <= 24_000
-
